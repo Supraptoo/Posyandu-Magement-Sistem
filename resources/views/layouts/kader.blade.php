@@ -2,722 +2,320 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>@yield('title', 'Sistem Posyandu - Kader')</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Dashboard') — Posyandu Kader</title>
     
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Custom CSS -->
-    <style>
-        :root {
-            --primary-color: #06D6A0;
-            --primary-dark: #048B69;
-            --primary-light: #E8FFF8;
-            --secondary-color: #118AB2;
-            --accent-color: #FFD166;
-            --danger-color: #EF476F;
-            --dark-color: #073B4C;
-            --gray-color: #8B9DA9;
-            --gray-light: #F7F9FB;
-            --white: #FFFFFF;
-            --shadow-sm: 0 2px 8px rgba(7, 59, 76, 0.04);
-            --shadow-md: 0 4px 16px rgba(7, 59, 76, 0.08);
-            --shadow-lg: 0 8px 32px rgba(7, 59, 76, 0.12);
-            --sidebar-width: 280px;
-            --header-height: 72px;
-            --radius-sm: 12px;
-            --radius-md: 16px;
-            --radius-lg: 24px;
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Inter', sans-serif;
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #F7F9FB 0%, #E8FFF8 100%);
-            color: var(--dark-color);
-            overflow-x: hidden;
-            font-size: 15px;
-            line-height: 1.6;
+            font-family: var(--font-sans);
+            background-color: #f8fafc;
+        }
+        
+        /* Custom Premium Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+
+        /* Glassmorphism Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
 
-        /* ========== SIDEBAR ========== */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: var(--white);
-            border-right: 1px solid rgba(7, 59, 76, 0.08);
-            z-index: 1000;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
+        /* Animasi Dropdown Super Mulus */
+        @keyframes menuPop {
+            0% { opacity: 0; transform: scale(0.95) translateY(-10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
-
-        .sidebar::-webkit-scrollbar {
-            width: 4px;
+        .animate-pop {
+            animation: menuPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform-origin: top right;
         }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: var(--gray-color);
-            border-radius: 10px;
-        }
-
-        .sidebar-header {
-            padding: 28px 24px;
-            border-bottom: 1px solid rgba(7, 59, 76, 0.08);
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-        }
-
-        .sidebar-logo {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            text-decoration: none;
-        }
-
-        .sidebar-logo-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: var(--white);
-        }
-
-        .sidebar-logo-text h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--white);
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .sidebar-logo-text p {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.8);
-            margin: 0;
-            font-weight: 500;
-        }
-
-        .sidebar-nav {
-            padding: 24px 16px;
-        }
-
-        .nav-section-title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--gray-color);
-            padding: 0 12px 12px;
-            margin-top: 24px;
-        }
-
-        .nav-section-title:first-child {
-            margin-top: 0;
-        }
-
-        .nav-item {
-            margin-bottom: 4px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px 16px;
-            border-radius: var(--radius-sm);
-            text-decoration: none;
-            color: var(--dark-color);
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: var(--primary-color);
-            transform: scaleY(0);
-            transition: transform 0.3s ease;
-        }
-
-        .nav-link:hover {
-            background: var(--primary-light);
-            color: var(--primary-dark);
-            transform: translateX(4px);
-        }
-
-        .nav-link:hover::before {
-            transform: scaleY(1);
-        }
-
-        .nav-link.active {
-            background: linear-gradient(135deg, var(--primary-light) 0%, rgba(6, 214, 160, 0.15) 100%);
-            color: var(--primary-dark);
-            font-weight: 600;
-        }
-
-        .nav-link.active::before {
-            transform: scaleY(1);
-        }
-
-        .nav-link i {
-            font-size: 18px;
-            width: 22px;
-            text-align: center;
-        }
-
-        .nav-link .fa-angle-down {
-            margin-left: auto;
-            font-size: 14px;
-            transition: transform 0.3s ease;
-        }
-
-        .nav-link:not(.collapsed) .fa-angle-down {
-            transform: rotate(180deg);
-        }
-
-        .collapse .nav-link {
-            padding: 10px 16px 10px 52px;
-            font-size: 13px;
-        }
-
-        /* ========== MAIN CONTENT ========== */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            min-height: 100vh;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* ========== TOP HEADER ========== */
-        .top-header {
-            height: var(--header-height);
-            background: var(--white);
-            border-bottom: 1px solid rgba(7, 59, 76, 0.08);
-            position: sticky;
-            top: 0;
-            z-index: 900;
-            padding: 0 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .menu-toggle {
-            display: none;
-            width: 40px;
-            height: 40px;
-            border: none;
-            background: var(--gray-light);
-            border-radius: var(--radius-sm);
-            color: var(--dark-color);
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .menu-toggle:hover {
-            background: var(--primary-light);
-            color: var(--primary-color);
-        }
-
-        .page-breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: var(--gray-color);
-        }
-
-        .breadcrumb-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .breadcrumb-item.active {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .header-btn {
-            width: 44px;
-            height: 44px;
-            border: none;
-            background: var(--gray-light);
-            border-radius: var(--radius-sm);
-            color: var(--dark-color);
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .header-btn:hover {
-            background: var(--primary-light);
-            color: var(--primary-color);
-        }
-
-        .header-btn .badge {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            font-size: 10px;
-            padding: 3px 6px;
-            background: var(--danger-color);
-            color: var(--white);
-            border-radius: 10px;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 12px;
-            background: var(--gray-light);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: var(--dark-color);
-        }
-
-        .user-menu:hover {
-            background: var(--primary-light);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-size: 18px;
-        }
-
-        .user-info h6 {
-            font-size: 14px;
-            font-weight: 600;
-            margin: 0;
-            color: var(--dark-color);
-        }
-
-        .user-info p {
-            font-size: 12px;
-            color: var(--gray-color);
-            margin: 0;
-        }
-
-        /* ========== PAGE CONTENT ========== */
-        .page-content {
-            padding: 32px;
-        }
-
-        /* ========== ALERTS ========== */
-        .alert {
-            border: 0;
-            border-radius: var(--radius-md);
-            padding: 16px 20px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideDown 0.4s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .alert i {
-            font-size: 20px;
-        }
-
-        .alert-success {
-            background: linear-gradient(135deg, rgba(6, 214, 160, 0.1) 0%, rgba(6, 214, 160, 0.05) 100%);
-            color: var(--primary-dark);
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .alert-danger {
-            background: linear-gradient(135deg, rgba(239, 71, 111, 0.1) 0%, rgba(239, 71, 111, 0.05) 100%);
-            color: #c62952;
-            border-left: 4px solid var(--danger-color);
-        }
-
-        .alert-warning {
-            background: linear-gradient(135deg, rgba(255, 209, 102, 0.1) 0%, rgba(255, 209, 102, 0.05) 100%);
-            color: #d4a843;
-            border-left: 4px solid var(--accent-color);
-        }
-
-        .alert-info {
-            background: linear-gradient(135deg, rgba(17, 138, 178, 0.1) 0%, rgba(17, 138, 178, 0.05) 100%);
-            color: #0e6f8f;
-            border-left: 4px solid var(--secondary-color);
-        }
-
-        /* ========== CARD ========== */
-        .card {
-            border: 0;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            margin-bottom: 24px;
-            background: var(--white);
-            border: 1px solid rgba(7, 59, 76, 0.06);
-            overflow: hidden;
-        }
-
-        .card-header {
-            background: var(--white);
-            border-bottom: 1px solid rgba(7, 59, 76, 0.08);
-            padding: 20px 24px;
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--dark-color);
-        }
-
-        .card-body {
-            padding: 24px;
-        }
-
-        /* ========== FOOTER ========== */
-        .footer {
-            margin-top: 40px;
-            padding: 24px 0;
-            border-top: 1px solid rgba(7, 59, 76, 0.08);
-            background: var(--white);
-        }
-
-        .footer .text-muted {
-            color: var(--gray-color) !important;
-            font-size: 13px;
-        }
-
-        /* ========== DROPDOWN ========== */
-        .dropdown-menu {
-            border: 0;
-            box-shadow: var(--shadow-lg);
-            border-radius: var(--radius-md);
-            padding: 8px;
-            margin-top: 8px;
-        }
-
-        .dropdown-item {
-            padding: 10px 16px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .dropdown-item:hover {
-            background: var(--primary-light);
-            color: var(--primary-dark);
-        }
-
-        .dropdown-divider {
-            margin: 8px 0;
-            border-color: rgba(7, 59, 76, 0.08);
-        }
-
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .menu-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .top-header {
-                padding: 0 16px;
-            }
-
-            .page-content {
-                padding: 20px 16px;
-            }
-
-            .user-info {
-                display: none;
-            }
-
-            .page-breadcrumb {
-                display: none;
-            }
-        }
-
-        /* ========== ANIMATIONS ========== */
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-slide-in {
-            animation: slideIn 0.6s ease-out;
-        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
-    
     @stack('styles')
 </head>
-<body>
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <a href="{{ route('kader.dashboard') }}" class="sidebar-logo">
-                <div class="sidebar-logo-icon">
-                    <i class="fas fa-heartbeat"></i>
+<body class="text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-[280px] bg-white border-r border-slate-200 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        
+        <div class="h-20 flex items-center px-6 border-b border-slate-100/80 shrink-0">
+            <div class="flex items-center gap-3 w-full">
+                <div class="w-10 h-10 rounded-[12px] bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-[0_4px_12px_rgba(79,70,229,0.3)] shrink-0">
+                    <i class="fas fa-heart-pulse text-lg"></i>
                 </div>
-                <div class="sidebar-logo-text">
-                    <h3>SIPOSYANDU</h3>
-                    <p>Panel Kader</p>
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-xl font-black text-slate-900 tracking-tight truncate">Posyandu<span class="text-indigo-600">Ku</span></h1>
                 </div>
-            </a>
+                <button id="closeSidebar" class="lg:hidden w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
 
-        <nav class="sidebar-nav">
+        <div class="p-5 pb-2 shrink-0">
+            <div class="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-3 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors cursor-pointer" onclick="document.getElementById('userDropdownBtn').click()">
+                <div class="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold shrink-0">
+                    {{ strtoupper(substr(Auth::user()->profile->full_name ?? Auth::user()->name, 0, 1)) }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-slate-900 truncate">{{ Auth::user()->profile->full_name ?? Auth::user()->name }}</p>
+                    <p class="text-[11px] text-slate-500 font-semibold flex items-center gap-1.5 mt-0.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_2px_rgba(16,185,129,0.2)] animate-pulse"></span>
+                        Kader Aktif
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto px-4 py-4 scroll-smooth">
             @include('partials.sidebar.kader')
         </nav>
     </aside>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Top Header -->
-        <header class="top-header">
-            <div class="header-left">
-                <button class="menu-toggle" id="menuToggle">
-                    <i class="fas fa-bars"></i>
+    <div class="lg:ml-[280px] min-h-screen flex flex-col transition-all duration-300 relative">
+        
+        <header class="h-20 glass-header border-b border-slate-200/80 sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex items-center gap-4">
+                <button id="menuToggle" class="lg:hidden w-10 h-10 flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors">
+                    <i class="fas fa-bars-staggered"></i>
                 </button>
-                <div class="page-breadcrumb">
-                    <span class="breadcrumb-item">
+                
+                <nav class="hidden sm:flex items-center gap-2 text-sm font-semibold">
+                    <a href="{{ route('kader.dashboard') }}" class="text-slate-400 hover:text-indigo-600 transition-colors">
                         <i class="fas fa-home"></i>
-                        Dashboard
-                    </span>
-                    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
-                    <span class="breadcrumb-item active">
-                        @yield('page-name', 'Overview')
-                    </span>
-                </div>
+                    </a>
+                    <i class="fas fa-chevron-right text-slate-300 text-[10px]"></i>
+                    <span class="text-slate-700">@yield('page-name', 'Dashboard')</span>
+                </nav>
             </div>
+            
+            <div class="flex items-center gap-1 sm:gap-3 relative">
+                
+                <div class="hidden md:flex items-center bg-slate-100/80 hover:bg-white transition-colors rounded-full px-4 py-2.5 w-64 border border-slate-200/60 focus-within:bg-white focus-within:border-indigo-300 focus-within:ring-4 focus-within:ring-indigo-50 shadow-inner mr-2">
+                    <i class="fas fa-search text-slate-400 text-sm"></i>
+                    <input type="text" placeholder="Cari warga posyandu..." class="bg-transparent border-none outline-none text-sm w-full ml-3 placeholder:text-slate-400 font-semibold text-slate-700">
+                </div>
+                
+                <a href="{{ route('kader.import.index') }}" class="hidden sm:flex w-10 h-10 items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="Import Data Excel">
+                    <i class="fas fa-file-import text-lg"></i>
+                </a>
 
-            <div class="header-actions">
-                <button class="header-btn" title="Notifikasi">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge">3</span>
-                </button>
-                <button class="header-btn" title="Pesan">
-                    <i class="fas fa-envelope"></i>
-                </button>
-                <div class="dropdown">
-                    <div class="user-menu" data-bs-toggle="dropdown">
-                        <div class="user-avatar">
-                            <i class="fas fa-user-nurse"></i>
+                <div class="static sm:relative">
+                    <button id="notifDropdownBtn" class="relative w-10 h-10 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all">
+                        <i class="fas fa-bell text-[19px]"></i>
+                        <span id="notifBadge" class="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white animate-pulse"></span>
+                    </button>
+                    
+                    <div id="notifDropdown" class="hidden absolute top-20 right-4 w-[calc(100vw-2rem)] sm:top-auto sm:right-0 sm:mt-3 sm:w-80 bg-white rounded-2xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 z-50 animate-pop">
+                        <div class="px-5 py-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
+                            <h3 class="text-sm font-bold text-slate-800">Notifikasi Terbaru</h3>
+                            <span id="notifCount" class="text-[10px] font-extrabold bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full uppercase tracking-wider transition-colors">2 Baru</span>
                         </div>
-                        <div class="user-info">
-                            <h6>{{ Auth::user()->profile->full_name ?? Auth::user()->email }}</h6>
-                            <p>Kader Posyandu</p>
-                        </div>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" href="{{ route('kader.profile.index') }}">
-                                <i class="fas fa-user me-2"></i>Profil Saya
+                        
+                        <div id="notifList" class="max-h-72 overflow-y-auto custom-scrollbar">
+                            <a href="{{ route('kader.import.history') }}" class="flex gap-3 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-50/50 group">
+                                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-file-excel text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[13px] font-bold text-slate-800 leading-tight">Data Excel Berhasil Diimpor</p>
+                                    <p class="text-[12px] text-slate-500 mt-1 leading-snug">Data lansia bulan ini berhasil masuk ke dalam sistem utama.</p>
+                                    <p class="text-[10px] font-bold text-indigo-500 mt-2"><i class="fas fa-clock mr-1"></i> Baru saja</p>
+                                </div>
                             </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
+                            <a href="{{ route('kader.jadwal.index') }}" class="flex gap-3 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-50/50 group">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-calendar-check text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[13px] font-bold text-slate-800 leading-tight">Jadwal Posyandu Mendekat</p>
+                                    <p class="text-[12px] text-slate-500 mt-1 leading-snug">Persiapkan layanan posyandu balita untuk esok hari jam 08:00.</p>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-2"><i class="fas fa-clock mr-1"></i> 2 jam yang lalu</p>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="px-5 py-3 text-center bg-white rounded-b-2xl border-t border-slate-50">
+                            <button type="button" id="markAllReadBtn" class="w-full text-[11px] font-bold text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">Tandai semua dibaca</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="static sm:relative ml-1">
+                    <button id="userDropdownBtn" class="w-10 h-10 rounded-full ring-2 ring-slate-200 overflow-hidden hover:ring-indigo-300 transition-all flex items-center justify-center bg-indigo-50 text-indigo-700 font-bold shadow-sm">
+                        {{ strtoupper(substr(Auth::user()->profile->full_name ?? Auth::user()->name, 0, 1)) }}
+                    </button>
+                    
+                    <div id="userDropdown" class="hidden absolute top-20 right-4 w-[calc(100vw-2rem)] sm:top-auto sm:right-0 sm:mt-3 sm:w-64 bg-white rounded-2xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 z-50 animate-pop">
+                        <div class="px-5 py-4 border-b border-slate-50 bg-slate-50/50 rounded-t-2xl">
+                            <p class="text-[14px] font-bold text-slate-800 truncate">{{ Auth::user()->profile->full_name ?? Auth::user()->name }}</p>
+                            <p class="text-[11px] text-slate-500 font-semibold truncate mt-0.5">{{ Auth::user()->email ?? 'Kader Posyandu' }}</p>
+                        </div>
+                        
+                        <div class="p-2 space-y-1">
+                            <a href="{{ route('kader.profile.index') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-xl transition-colors">
+                                <i class="fas fa-user-circle w-5 text-center text-slate-400"></i> Profil & Kontak
+                            </a>
+                            <a href="{{ route('kader.profile.password') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-xl transition-colors">
+                                <i class="fas fa-shield-alt w-5 text-center text-slate-400"></i> Ganti Password
+                            </a>
+                        </div>
+                        
+                        <div class="p-2 border-t border-slate-50">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="dropdown-item">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+                                    <i class="fas fa-sign-out-alt w-5 text-center"></i> Keluar Sistem
                                 </button>
                             </form>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
                 </div>
+                
             </div>
         </header>
 
-        <!-- Page Content -->
-        <main class="page-content">
-            <!-- Flash Messages -->
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ session('success') }}</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full relative z-0">
             
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ session('error') }}</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            
-            @if(session('warning'))
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>{{ session('warning') }}</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            
-            @if(session('info'))
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="fas fa-info-circle"></i>
-                    <span>{{ session('info') }}</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            
-            @if($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div>
-                        <strong>Terjadi kesalahan!</strong>
-                        <ul class="mb-0 mt-2" style="padding-left: 20px;">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            
-            <!-- Main Content -->
-            <div class="container-fluid px-0">
-                @yield('content')
-            </div>
-            
-            <!-- Footer -->
-            <footer class="footer">
-                <div class="container-fluid">
-                    <div class="row align-items-center">
-                        <div class="col-md-6 text-muted">
-                            &copy; {{ date('Y') }} Sistem Informasi Posyandu. All rights reserved.
+            @foreach (['success' => ['bg-emerald-50', 'text-emerald-800', 'text-emerald-500', 'fa-check-circle', 'border-emerald-200'], 
+                       'error' => ['bg-rose-50', 'text-rose-800', 'text-rose-500', 'fa-circle-exclamation', 'border-rose-200']] as $msg => $classes)
+                @if(session($msg))
+                    <div class="mb-6 px-5 py-4 {{ $classes[0] }} border {{ $classes[4] }} rounded-2xl flex items-center justify-between shadow-sm animate-[slideDown_0.4s_ease-out]">
+                        <div class="flex items-center gap-3">
+                            <i class="fas {{ $classes[3] }} {{ $classes[2] }} text-xl"></i>
+                            <span class="{{ $classes[1] }} text-[13px] sm:text-sm font-bold">{{ session($msg) }}</span>
                         </div>
-                        <div class="col-md-6 text-end text-muted">
-                            <i class="fas fa-heart text-danger"></i> Dibuat dengan semangat untuk kesehatan masyarakat
-                        </div>
+                        <button onclick="this.parentElement.style.display='none'" class="{{ $classes[2] }} hover:opacity-70 transition-opacity p-2">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
-                </div>
-            </footer>
+                @endif
+            @endforeach
+
+            @yield('content')
+            
         </main>
     </div>
 
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- Custom Scripts -->
     <script>
-        $(document).ready(function() {
-            // Mobile Menu Toggle
-            $('#menuToggle').on('click', function() {
-                $('#sidebar').toggleClass('show');
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            const menuToggle = document.getElementById('menuToggle');
+            const closeSidebar = document.getElementById('closeSidebar');
+            
+            // 1. Sidebar Logic (Mobile)
+            const toggleSidebar = () => {
+                const isOpen = !sidebar.classList.contains('-translate-x-full');
+                if (isOpen) {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.remove('opacity-100');
+                    setTimeout(() => overlay.classList.add('hidden'), 300);
+                    document.body.classList.remove('overflow-hidden');
+                } else {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                    setTimeout(() => overlay.classList.add('opacity-100'), 10);
+                    document.body.classList.add('overflow-hidden');
+                }
+            };
 
-            // Close sidebar when clicking outside on mobile
-            $(document).on('click', function(e) {
-                if ($(window).width() <= 768) {
-                    if (!$(e.target).closest('#sidebar, #menuToggle').length) {
-                        $('#sidebar').removeClass('show');
-                    }
-                }
-            });
+            if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
+            if (closeSidebar) closeSidebar.addEventListener('click', toggleSidebar);
+            if (overlay) overlay.addEventListener('click', toggleSidebar);
+
+            // 2. Dropdown Logic (Profil & Notifikasi)
+            const userBtn = document.getElementById('userDropdownBtn');
+            const userMenu = document.getElementById('userDropdown');
+            const notifBtn = document.getElementById('notifDropdownBtn');
+            const notifMenu = document.getElementById('notifDropdown');
             
-            // Auto-hide alerts after 5 seconds
-            setTimeout(function() {
-                $('.alert').fadeOut('slow', function() {
-                    $(this).remove();
+            if (userBtn && userMenu) {
+                userBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('hidden');
+                    if(notifMenu) notifMenu.classList.add('hidden'); 
                 });
-            }, 5000);
-            
-            // Keep collapse open for active items
-            const activeLinks = document.querySelectorAll('.nav-link.active');
-            activeLinks.forEach(link => {
-                const parentCollapse = link.closest('.collapse');
-                if (parentCollapse) {
-                    parentCollapse.classList.add('show');
-                    const toggleLink = document.querySelector('[href="#' + parentCollapse.id + '"]');
-                    if (toggleLink) {
-                        toggleLink.classList.remove('collapsed');
-                    }
+            }
+
+            if (notifBtn && notifMenu) {
+                notifBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    notifMenu.classList.toggle('hidden');
+                    if(userMenu) userMenu.classList.add('hidden'); 
+                });
+            }
+
+            // Tutup dropdown bila klik di luar
+            document.addEventListener('click', (e) => {
+                if (userMenu && !userMenu.contains(e.target) && !userBtn.contains(e.target)) {
+                    userMenu.classList.add('hidden');
+                }
+                if (notifMenu && !notifMenu.contains(e.target) && !notifBtn.contains(e.target)) {
+                    notifMenu.classList.add('hidden');
                 }
             });
+            
+            if(notifMenu) notifMenu.addEventListener('click', (e) => e.stopPropagation());
+            if(userMenu) userMenu.addEventListener('click', (e) => e.stopPropagation());
+
+            // ==========================================
+            // 3. LOGIKA INTERAKTIF "TANDAI SEMUA DIBACA"
+            // ==========================================
+            const markAllReadBtn = document.getElementById('markAllReadBtn');
+            const notifList = document.getElementById('notifList');
+            const notifBadge = document.getElementById('notifBadge');
+            const notifCount = document.getElementById('notifCount');
+
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', function(e) {
+                    e.preventDefault(); // Mencegah reload
+                    
+                    // A. Hilangkan titik merah kedip-kedip di lonceng
+                    if(notifBadge) notifBadge.style.display = 'none';
+                    
+                    // B. Ubah tulisan merah '2 Baru' menjadi tulisan abu-abu '0 Baru'
+                    if(notifCount) {
+                        notifCount.textContent = '0 Baru';
+                        notifCount.className = 'text-[10px] font-extrabold bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full uppercase tracking-wider transition-colors';
+                    }
+                    
+                    // C. Hapus daftar notifikasi dan tampilkan status kosong dengan efek fade-in
+                    if(notifList) {
+                        notifList.innerHTML = `
+                            <div class="flex flex-col items-center justify-center py-10 text-slate-400 animate-pop">
+                                <i class="fas fa-bell-slash text-4xl mb-3 opacity-30"></i>
+                                <p class="text-xs font-semibold">Tidak ada notifikasi baru</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // D. Ubah teks tombol bawah agar tidak bisa dipencet lagi
+                    this.textContent = 'Semua telah dibaca';
+                    this.classList.remove('hover:text-indigo-600', 'text-slate-500');
+                    this.classList.add('text-slate-300', 'cursor-not-allowed');
+                    this.disabled = true;
+                });
+            }
         });
     </script>
     

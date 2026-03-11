@@ -1,278 +1,86 @@
 @extends('layouts.kader')
 
 @section('title', 'Laporan Remaja')
+@section('page-name', 'Laporan Posyandu')
 
-@section('content')
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-child me-2"></i>Laporan Remaja
-        </h1>
-        <div>
-            <button class="btn btn-success" onclick="window.print()">
-                <i class="fas fa-print me-2"></i>Cetak
-            </button>
-        </div>
-    </div>
-
-    <!-- Filter -->
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            <form action="{{ route('kader.laporan.remaja') }}" method="GET">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="start_date" class="form-label">Tanggal Mulai</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date" 
-                                   value="{{ $start_date }}">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="end_date" class="form-label">Tanggal Selesai</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date" 
-                                   value="{{ $end_date }}">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="d-grid gap-2" style="margin-top: 32px">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter me-2"></i>Filter
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Data Table -->
-    <div class="card shadow">
-        <div class="card-header bg-secondary text-white">
-            <h6 class="m-0 font-weight-bold">
-                <i class="fas fa-file-alt me-2"></i>Laporan Data Remaja
-                <small class="float-end">
-                    Periode: {{ \Carbon\Carbon::parse($start_date)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($end_date)->format('d/m/Y') }}
-                </small>
-            </h6>
-        </div>
-        <div class="card-body">
-            @if($remajas->count() > 0)
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th rowspan="2" class="align-middle">No</th>
-                            <th rowspan="2" class="align-middle">Nama Remaja</th>
-                            <th rowspan="2" class="align-middle">NIK</th>
-                            <th rowspan="2" class="align-middle">TTL</th>
-                            <th rowspan="2" class="align-middle">Usia</th>
-                            <th rowspan="2" class="align-middle">Sekolah</th>
-                            <th colspan="4" class="text-center">Pemeriksaan Terakhir</th>
-                            <th rowspan="2" class="align-middle">Tanggal Kunjungan</th>
-                        </tr>
-                        <tr>
-                            <th>BB (kg)</th>
-                            <th>TB (cm)</th>
-                            <th>TD (mmHg)</th>
-                            <th>Hb (g/dL)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($remajas as $index => $remaja)
-                        @php
-                            $usia_tahun = $remaja->tanggal_lahir->diffInYears(now());
-                        @endphp
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>
-                                <strong>{{ $remaja->nama_lengkap }}</strong><br>
-                                <small class="text-muted">{{ $remaja->kode_remaja }}</small>
-                            </td>
-                            <td>{{ $remaja->nik }}</td>
-                            <td>
-                                {{ $remaja->tempat_lahir }},<br>
-                                {{ $remaja->tanggal_lahir->format('d/m/Y') }}
-                            </td>
-                            <td class="text-center">
-                                {{ $usia_tahun }} tahun
-                            </td>
-                            <td>
-                                {{ $remaja->sekolah }}<br>
-                                <small class="text-muted">Kelas: {{ $remaja->kelas }}</small>
-                            </td>
-                            <td class="text-center">{{ $remaja->kunjungans->first()->pemeriksaan->berat_badan ?? '-' }}</td>
-                            <td class="text-center">{{ $remaja->kunjungans->first()->pemeriksaan->tinggi_badan ?? '-' }}</td>
-                            <td class="text-center">{{ $remaja->kunjungans->first()->pemeriksaan->tekanan_darah ?? '-' }}</td>
-                            <td class="text-center">{{ $remaja->kunjungans->first()->pemeriksaan->hemoglobin ?? '-' }}</td>
-                            <td>
-                                @if($remaja->kunjungans->count() > 0)
-                                {{ $remaja->kunjungans->first()->tanggal_kunjungan->format('d/m/Y') }}
-                                @else
-                                -
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot class="table-secondary">
-                        <tr>
-                            <td colspan="11" class="text-center">
-                                <strong>Total Data: {{ $remajas->count() }} remaja</strong>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-            
-            <!-- Export Options -->
-            <div class="mt-4 text-center">
-                <form action="{{ route('kader.laporan.generate', 'remaja') }}" method="GET" class="d-inline">
-                    <input type="hidden" name="start_date" value="{{ $start_date }}">
-                    <input type="hidden" name="end_date" value="{{ $end_date }}">
-                    <input type="hidden" name="format" value="pdf">
-                    <button type="submit" class="btn btn-secondary">
-                        <i class="fas fa-file-pdf me-2"></i>Export PDF
-                    </button>
-                </form>
-                
-                <form action="{{ route('kader.laporan.generate', 'remaja') }}" method="GET" class="d-inline ms-2">
-                    <input type="hidden" name="start_date" value="{{ $start_date }}">
-                    <input type="hidden" name="end_date" value="{{ $end_date }}">
-                    <input type="hidden" name="format" value="excel">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-file-excel me-2"></i>Export Excel
-                    </button>
-                </form>
-            </div>
-            @else
-            <div class="alert alert-info text-center">
-                <i class="fas fa-info-circle me-2"></i>
-                Tidak ada data remaja dalam periode yang dipilih.
-            </div>
-            @endif
-        </div>
-    </div>
-    
-    <!-- Summary -->
-    @if($remajas->count() > 0)
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card shadow">
-                <div class="card-header bg-info text-white">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-chart-bar me-2"></i>Statistik
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="text-center">
-                        <h2 class="font-weight-bold text-secondary">{{ $remajas->count() }}</h2>
-                        <p class="text-muted">Total Remaja</p>
-                    </div>
-                    <div class="mt-3">
-                        <p><i class="fas fa-male text-primary me-2"></i> Laki-laki: 
-                            {{ $remajas->where('jenis_kelamin', 'L')->count() }}
-                        </p>
-                        <p><i class="fas fa-female text-danger me-2"></i> Perempuan: 
-                            {{ $remajas->where('jenis_kelamin', 'P')->count() }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-chart-line me-2"></i>Distribusi Usia
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <canvas id="ageChart" height="100"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-</div>
-
-@push('scripts')
-@if($remajas->count() > 0)
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Age distribution chart
-    const ageGroups = {
-        '10-12 tahun': 0,
-        '13-15 tahun': 0,
-        '16-18 tahun': 0,
-        '19+ tahun': 0
-    };
-    
-    @foreach($remajas as $remaja)
-        @php
-            $usia_tahun = $remaja->tanggal_lahir->diffInYears(now());
-        @endphp
-        
-        @if($usia_tahun >= 10 && $usia_tahun <= 12)
-            ageGroups['10-12 tahun']++;
-        @elseif($usia_tahun >= 13 && $usia_tahun <= 15)
-            ageGroups['13-15 tahun']++;
-        @elseif($usia_tahun >= 16 && $usia_tahun <= 18)
-            ageGroups['16-18 tahun']++;
-        @elseif($usia_tahun >= 19)
-            ageGroups['19+ tahun']++;
-        @endif
-    @endforeach
-    
-    const ctx = document.getElementById('ageChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: Object.keys(ageGroups),
-            datasets: [{
-                label: 'Jumlah Remaja',
-                data: Object.values(ageGroups),
-                backgroundColor: [
-                    '#6c757d', '#4e73df', '#36b9cc', '#1cc88a'
-                ],
-                borderColor: [
-                    '#6c757d', '#4e73df', '#36b9cc', '#1cc88a'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        }
-    });
-});
-</script>
-@endif
+@push('styles')
+<style>
+    .animate-slide-up { opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @media print {
+        body { background-color: white !important; }
+        #sidebar, header, .print\:hidden, .flash-message { display: none !important; }
+        .lg\:ml-\[280px\] { margin-left: 0 !important; }
+        main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+        .paper-preview { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+    }
+</style>
 @endpush
 
-<style>
-@media print {
-    .card-header {
-        background-color: #6c757d !important;
-        -webkit-print-color-adjust: exact;
-    }
-    .table-secondary {
-        background-color: #e9ecef !important;
-        -webkit-print-color-adjust: exact;
-    }
-    .btn, .card.shadow {
-        display: none;
-    }
-}
-</style>
+@section('content')
+<div class="max-w-6xl mx-auto animate-slide-up">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-[18px] bg-sky-100 text-sky-600 flex items-center justify-center text-2xl shadow-inner border border-sky-200/50">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Laporan Remaja</h1>
+                <p class="text-slate-500 mt-1 font-medium text-sm">Rekapitulasi skrining PTM remaja bulanan.</p>
+            </div>
+        </div>
+        
+        <a href="{{ route('kader.laporan.generate', ['type' => 'remaja', 'bulan' => $bulan, 'tahun' => $tahun]) }}" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-sky-500 to-sky-600 text-white font-black text-sm rounded-xl hover:from-sky-600 hover:to-sky-700 shadow-[0_8px_20px_rgba(14,165,233,0.25)] hover:shadow-[0_10px_25px_rgba(14,165,233,0.35)] hover:-translate-y-0.5 transition-all duration-300">
+            <i class="fas fa-download text-lg mr-1"></i> Unduh PDF Resmi
+        </a>
+    </div>
+
+    <div class="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 mb-6">
+        <form action="{{ route('kader.laporan.remaja') }}" method="GET" class="flex flex-col sm:flex-row items-end gap-4">
+            <div class="w-full sm:w-1/3">
+                <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Pilih Bulan</label>
+                <select name="bulan" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 outline-none font-medium focus:border-sky-500 focus:bg-white transition-colors shadow-inner">
+                    @foreach(range(1, 12) as $m)
+                        <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}" {{ $bulan == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>
+                            {{ \Carbon\Carbon::create()->month((int)$m)->translatedFormat('F') }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <div class="w-full sm:w-1/3">
+                <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-widest mb-2">Pilih Tahun</label>
+                <select name="tahun" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 outline-none font-medium focus:border-sky-500 focus:bg-white transition-colors shadow-inner">
+                    @foreach(range(date('Y')-2, date('Y')) as $y)
+                        <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <div class="w-full sm:w-1/3">
+                <button type="submit" class="w-full py-3 bg-sky-100 text-sky-700 font-extrabold text-sm rounded-xl hover:bg-sky-200 hover:text-sky-800 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-filter"></i> Tampilkan Laporan
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-slate-100/50 p-4 sm:p-8 rounded-[24px] border border-slate-200/80 shadow-inner overflow-x-auto print:bg-white print:p-0 print:border-none print:shadow-none">
+        
+        <div class="mb-6 p-4 bg-white border border-slate-200 rounded-2xl flex items-center gap-3 shadow-sm print:hidden">
+            <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0">
+                <i class="fas fa-eye"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-600 leading-relaxed">
+                <span class="text-slate-800">Mode Pratinjau (Preview).</span> Tampilan di bawah adalah simulasi kertas A4 Landscape. Kop surat asli dan ukuran akan disesuaikan otomatis saat Anda mengunduh PDF.
+            </p>
+        </div>
+
+        <div class="paper-preview bg-white mx-auto p-10 sm:p-12 shadow-xl border border-slate-200" style="min-width: 1000px; max-width: 1122px; border-radius: 4px;">
+            @include('kader.laporan.templates.table-remaja')
+        </div>
+    </div>
+
+</div>
 @endsection

@@ -5,106 +5,124 @@ namespace App\Http\Controllers\Bidan;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
-// Import Model
+// Panggil Model yang dibutuhkan
 use App\Models\Balita;
+use App\Models\Remaja;
 use App\Models\Lansia;
 use App\Models\Pemeriksaan;
 use App\Models\JadwalPosyandu;
 
 class DashboardController extends Controller
 {
+    /**
+     * Menampilkan Halaman Dashboard Bidan
+     */
     public function index()
     {
+        $bulanIni = Carbon::now()->month;
+        $tahunIni = Carbon::now()->year;
+
         // 1. STATISTIK KARTU ATAS
         $totalBalita = Balita::count();
         $totalLansia = Lansia::count();
-
-        // Hitung Balita Stunting
+        
+        // Asumsi 'status_gizi' balita disimpan di tabel Pemeriksaan atau Balita
+        // Ini contoh query jika disimpan di tabel Pemeriksaan terbaru
         $balitaStunting = Pemeriksaan::where('kategori_pasien', 'balita')
-            ->whereIn('status_gizi', ['stunting', 'buruk'])
-            ->count();
+                            ->whereIn('status_gizi', ['Stunting', 'Buruk', 'Kurang'])
+                            ->distinct('pasien_id')
+                            ->count();
 
-        // Hitung Lansia Hipertensi
+        // Asumsi mencari Lansia dengan Hipertensi (Tekanan Darah tinggi, misal 140/90 ke atas)
+        // Jika Anda punya kolom 'diagnosa' atau 'tekanan_darah'
         $lansiaHipertensi = Pemeriksaan::where('kategori_pasien', 'lansia')
-            ->where(function($q) {
-                $q->where('tekanan_darah', 'like', '14%')
-                  ->orWhere('tekanan_darah', 'like', '15%')
-                  ->orWhere('tekanan_darah', 'like', '16%')
-                  ->orWhere('diagnosa', 'like', '%hipertensi%');
-            })
-            ->count();
+                            ->where(function($q) {
+                                $q->where('diagnosa', 'LIKE', '%hipertensi%')
+                                  ->orWhere('diagnosa', 'LIKE', '%darah tinggi%');
+                            })
+                            ->distinct('pasien_id')
+                            ->count();
 
-        // 2. ANTRIAN VALIDASI (PERBAIKAN ERROR DI SINI)
-        // Logika Baru: Cari yang diagnosanya NULL atau KOSONG saja.
-        // Tidak lagi mencari kolom 'status_verifikasi' yang hilang.
-        $antrianPemeriksaan = Pemeriksaan::with(['balita', 'remaja', 'lansia'])
-            ->whereMonth('created_at', Carbon::now()->month)
-            ->where(function($q) {
-                $q->whereNull('diagnosa')
-                  ->orWhere('diagnosa', '');
-            })
-            ->latest()
-            ->take(5)
-            ->get();
+        // Hitung antrian dari kader yang belum didiagnosa bidan (kolom diagnosa kosong)
+        $jumlahBelumValidasi = Pemeriksaan::whereMonth('created_at', $bulanIni)
+                                ->where(function($q) {
+                                    $q->whereNull('diagnosa')
+                                      ->orWhere('diagnosa', '');
+                                })
+                                ->count();
 
-        $jumlahBelumValidasi = Pemeriksaan::whereMonth('created_at', Carbon::now()->month)
-            ->where(function($q) {
-                $q->whereNull('diagnosa')
-                  ->orWhere('diagnosa', '');
-            })
-            ->count();
-
-        // 3. PASIEN BERISIKO
-        $pasienBerisiko = Pemeriksaan::with(['balita', 'lansia', 'remaja'])
-            ->where(function($q) {
-                $q->whereIn('status_gizi', ['stunting', 'buruk', 'obesitas'])
-                  ->orWhere('diagnosa', 'like', '%rujuk%')
-                  ->orWhere('diagnosa', 'like', '%risiko%');
-            })
-            ->latest('tanggal_periksa')
-            ->take(5)
-            ->get();
-
-        // 4. JADWAL BERIKUTNYA
+        // Cari Jadwal Posyandu terdekat (hari ini atau ke depan)
         $jadwalBerikutnya = JadwalPosyandu::whereDate('tanggal', '>=', Carbon::today())
-            ->where('status', 'aktif')
-            ->orderBy('tanggal', 'asc')
-            ->first();
+                                ->orderBy('tanggal', 'asc')
+                                ->first();
 
-        // 5. CHART GIZI
+
+        // 2. DATA UNTUK TABEL ANTRIAN VALIDASI (Limit 5 data terbaru)
+        $antrianPemeriksaan = Pemeriksaan::where(function($q) {
+                                    $q->whereNull('diagnosa')
+                                      ->orWhere('diagnosa', '');
+                                })
+                                ->latest()
+                                ->take(5)
+                                ->get();
+
+
+        // 3. DATA PASIEN RISIKO TINGGI (Tabel Bawah)
+        $pasienBerisiko = Pemeriksaan::whereNotNull('diagnosa')
+                                ->where(function($q) {
+                                    $q->where('diagnosa', 'LIKE', '%stunting%')
+                                      ->orWhere('diagnosa', 'LIKE', '%buruk%')
+                                      ->orWhere('diagnosa', 'LIKE', '%hipertensi%')
+                                      ->orWhere('diagnosa', 'LIKE', '%anemia%')
+                                      ->orWhere('diagnosa', 'LIKE', '%kritis%');
+                                })
+                                ->latest()
+                                ->take(5)
+                                ->get();
+
+
+        // 4. DATA GRAFIK DONUT (Status Gizi Balita)
         $chartGizi = [
-            'normal'   => Pemeriksaan::where('kategori_pasien', 'balita')->where('status_gizi', 'baik')->count(),
-            'kurang'   => Pemeriksaan::where('kategori_pasien', 'balita')->where('status_gizi', 'kurang')->count(),
-            'stunting' => Pemeriksaan::where('kategori_pasien', 'balita')->whereIn('status_gizi', ['stunting', 'buruk'])->count(),
-            'lebih'    => Pemeriksaan::where('kategori_pasien', 'balita')->whereIn('status_gizi', ['lebih', 'obesitas'])->count(),
+            'normal'   => Pemeriksaan::where('kategori_pasien', 'balita')->where('status_gizi', 'Normal')->count(),
+            'kurang'   => Pemeriksaan::where('kategori_pasien', 'balita')->whereIn('status_gizi', ['Kurang', 'Gizi Kurang'])->count(),
+            'stunting' => Pemeriksaan::where('kategori_pasien', 'balita')->whereIn('status_gizi', ['Stunting', 'Gizi Buruk', 'Buruk'])->count(),
+            'lebih'    => Pemeriksaan::where('kategori_pasien', 'balita')->whereIn('status_gizi', ['Lebih', 'Obesitas'])->count(),
         ];
 
-        // 6. CHART KUNJUNGAN
-        $chartKunjungan = Pemeriksaan::select(
-                DB::raw('MONTH(created_at) as bulan'), 
-                DB::raw('COUNT(*) as total')
-            )
-            ->where('created_at', '>=', Carbon::now()->subMonths(6))
-            ->groupBy('bulan')
-            ->orderBy('bulan')
-            ->pluck('total', 'bulan')
-            ->all();
 
-        $dataKunjungan = [];
+        // 5. DATA GRAFIK LINE (Tren Kunjungan 6 Bulan Terakhir)
         $labelBulan = [];
+        $dataKunjungan = [];
+        
+        // Loop mundur dari 5 bulan lalu sampai bulan ini
         for ($i = 5; $i >= 0; $i--) {
-            $date = Carbon::now()->subMonths($i);
-            $bulanAngka = $date->month;
-            $labelBulan[] = $date->translatedFormat('F');
-            $dataKunjungan[] = $chartKunjungan[$bulanAngka] ?? 0;
+            $bulanTarget = Carbon::now()->subMonths($i);
+            // Format label menjadi singkat, misal "Okt", "Nov"
+            $labelBulan[] = $bulanTarget->translatedFormat('M'); 
+            
+            // Hitung total pemeriksaan pada bulan & tahun tersebut
+            $total = Pemeriksaan::whereMonth('created_at', $bulanTarget->month)
+                                ->whereYear('created_at', $bulanTarget->year)
+                                ->count();
+                                
+            $dataKunjungan[] = $total;
         }
 
+
+        // 6. KIRIM SEMUA DATA KE VIEW
         return view('bidan.dashboard', compact(
-            'totalBalita', 'totalLansia', 'balitaStunting', 'lansiaHipertensi',
-            'pasienBerisiko', 'jadwalBerikutnya', 'antrianPemeriksaan', 'jumlahBelumValidasi',
-            'chartGizi', 'dataKunjungan', 'labelBulan'
+            'totalBalita',
+            'totalLansia',
+            'balitaStunting',
+            'lansiaHipertensi',
+            'jumlahBelumValidasi',
+            'jadwalBerikutnya',
+            'antrianPemeriksaan',
+            'pasienBerisiko',
+            'chartGizi',
+            'labelBulan',
+            'dataKunjungan'
         ));
     }
 }

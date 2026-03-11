@@ -1,513 +1,234 @@
-﻿<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - Sistem Posyandu</title>
+﻿@extends('layouts.auth')
+
+@section('title', 'Masuk | PosyanduCare')
+
+@push('styles')
+<style type="text/tailwindcss">
+    /* 1. Animasi Latar Belakang Bergerak Halus (Aurora) */
+    .bg-aurora {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #f1f5f9;
+        overflow: hidden;
+        z-index: -1;
+    }
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.6;
+        animation: floatOrb 20s infinite alternate ease-in-out;
+    }
+    .orb-1 { width: 50vw; height: 50vw; background: #99f6e4; top: -10%; left: -10%; animation-duration: 25s; }
+    .orb-2 { width: 60vw; height: 60vw; background: #bae6fd; bottom: -20%; right: -10%; animation-duration: 20s; animation-direction: alternate-reverse; }
+    .orb-3 { width: 40vw; height: 40vw; background: #ddd6fe; top: 30%; left: 40%; animation-duration: 30s; }
+
+    @keyframes floatOrb {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(5%, 10%) scale(1.1); }
+        100% { transform: translate(-5%, -5%) scale(0.9); }
+    }
+
+    /* 2. Kartu Glassmorphism (Wadah Utama) */
+    .glass-card {
+        @apply bg-white/80 backdrop-blur-2xl border border-white/50 shadow-[0_20px_60px_rgba(13,148,136,0.08)];
+    }
+
+    /* 3. Input Super Modern & Enak Dipencet */
+    .input-premium {
+        @apply w-full bg-slate-50/50 border-2 border-slate-100 text-slate-800 text-sm font-bold rounded-2xl py-4 pl-12 pr-12 transition-all duration-300 outline-none;
+    }
+    .input-premium:focus {
+        @apply bg-white border-teal-400 ring-4 ring-teal-400/10 shadow-sm transform -translate-y-0.5;
+    }
+    .input-premium::placeholder {
+        @apply font-medium text-slate-400;
+    }
+    .input-icon {
+        @apply absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors duration-300;
+    }
+    .group-focus-within .input-icon {
+        @apply text-teal-500;
+    }
+
+    /* 4. Animasi Masuk Bergelombang (Staggered Fade Up) */
+    .fade-up { opacity: 0; animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary: #009688;       /* Teal yang lebih modern */
-            --primary-dark: #00796B;
-            --primary-light: #B2DFDB;
-            --accent: #4DB6AC;
-            --text-dark: #37474F;
-            --text-gray: #90A4AE;
-            --bg-gradient: linear-gradient(135deg, #E0F2F1 0%, #80CBC4 100%);
-            --shadow-soft: 0 10px 40px -10px rgba(0, 121, 107, 0.3);
-        }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+@endpush
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+@section('content')
+<div class="bg-aurora">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-gradient);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow-x: hidden; /* Mencegah scroll horizontal */
-        }
+<div class="min-h-screen flex items-center justify-center p-4 sm:p-8 relative z-10">
 
-        /* Background Shapes Animation */
-        .bg-shape {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            z-index: -1;
-            animation: float 20s infinite ease-in-out;
-        }
-
-        .shape-1 { width: 300px; height: 300px; top: -100px; left: -100px; }
-        .shape-2 { width: 400px; height: 400px; bottom: -150px; right: -100px; animation-delay: 5s; }
-        .shape-3 { width: 150px; height: 150px; top: 20%; right: 15%; animation-delay: 10s; opacity: 0.2; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(20px, -20px); }
-        }
-
-        /* Main Card Container */
-        .login-card {
-            background: #fff;
-            width: 100%;
-            max-width: 1000px;
-            min-height: 600px;
-            border-radius: 24px;
-            box-shadow: var(--shadow-soft);
-            overflow: hidden;
-            display: flex;
-            position: relative;
-            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Left Side: Form */
-        .login-form-wrapper {
-            flex: 1;
-            padding: 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            z-index: 2;
-        }
-
-        /* Right Side: Illustration */
-        .login-illustration-wrapper {
-            flex: 1;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            padding: 40px;
-            position: relative;
-            color: white;
-            text-align: center;
-            overflow: hidden;
-        }
-
-        /* Decorative circles on illustration */
-        .circle-deco {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-        }
-        .cd-1 { width: 300px; height: 300px; top: -100px; right: -50px; }
-        .cd-2 { width: 200px; height: 200px; bottom: -50px; left: -50px; }
-
-        /* Typography & Components */
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 30px;
-        }
-
-        .logo-icon {
-            width: 45px;
-            height: 45px;
-            background: var(--primary);
-            color: white;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 4px 10px rgba(0, 150, 136, 0.3);
-        }
-
-        .logo-text h4 {
-            font-weight: 700;
-            color: var(--text-dark);
-            margin: 0;
-            font-size: 20px;
-        }
-
-        .logo-text span {
-            font-size: 12px;
-            color: var(--text-gray);
-            letter-spacing: 0.5px;
-        }
-
-        .welcome-text h2 {
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .welcome-text p {
-            color: var(--text-gray);
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
-
-        /* Role Selector Cards */
-        .role-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .role-card {
-            border: 2px solid #F0F0F0;
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #FAFAFA;
-        }
-
-        .role-card:hover {
-            border-color: var(--primary-light);
-            background: #fff;
-            transform: translateY(-2px);
-        }
-
-        .role-card.active {
-            border-color: var(--primary);
-            background: #E0F2F1;
-        }
-
-        .role-card i {
-            font-size: 20px;
-            margin-bottom: 5px;
-            color: var(--text-gray);
-            transition: color 0.3s;
-        }
-
-        .role-card.active i {
-            color: var(--primary);
-        }
-
-        .role-card span {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        /* Form Inputs */
-        .form-floating > .form-control {
-            border-radius: 10px;
-            border: 2px solid #F0F0F0;
-            padding-left: 45px; /* Space for icon */
-        }
-
-        .form-floating > .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(0, 150, 136, 0.1);
-        }
-
-        .input-group-icon {
-            position: absolute;
-            left: 15px;
-            top: 20px; /* Adjust based on floating label height */
-            z-index: 4;
-            color: var(--text-gray);
-            font-size: 16px;
-        }
+    <div class="w-full max-w-[1000px] glass-card rounded-[32px] sm:rounded-[40px] flex flex-col lg:flex-row overflow-hidden fade-up">
         
-        .form-floating > label {
-            padding-left: 45px; /* Adjust label position */
-        }
-
-        .btn-primary-custom {
-            background: var(--primary);
-            border: none;
-            border-radius: 10px;
-            padding: 14px;
-            font-weight: 600;
-            width: 100%;
-            color: white;
-            margin-top: 10px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0, 150, 136, 0.3);
-        }
-
-        .btn-primary-custom:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 150, 136, 0.4);
-            color: white;
-        }
-
-        .btn-primary-custom:disabled {
-            background: #CFD8DC;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* Lottie Container */
-        #lottieAnimation {
-            width: 100%;
-            max-width: 350px;
-            margin-bottom: 20px;
-        }
-
-        /* Alert Styling */
-        .alert-custom {
-            border-radius: 10px;
-            font-size: 13px;
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .alert-danger { background: #FFEBEE; color: #C62828; }
-        .alert-success { background: #E8F5E9; color: #2E7D32; }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 992px) {
-            .login-card {
-                max-width: 600px;
-                min-height: auto;
-                flex-direction: column; /* Stack vertically if needed, but usually hide illustration */
-            }
+        <div class="w-full lg:w-1/2 p-8 sm:p-12 lg:p-14 flex flex-col justify-center bg-white/60">
             
-            .login-illustration-wrapper {
-                display: none; /* Hide image on tablet/mobile */
-            }
-
-            .login-form-wrapper {
-                padding: 40px 30px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .login-form-wrapper {
-                padding: 30px 20px;
-            }
-            
-            .role-selector {
-                gap: 10px;
-            }
-            
-            .brand-logo {
-                justify-content: center;
-            }
-            
-            .welcome-text {
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="bg-shape shape-1"></div>
-    <div class="bg-shape shape-2"></div>
-    <div class="bg-shape shape-3"></div>
-
-    <div class="login-card">
-        
-        <div class="login-form-wrapper">
-            <div class="brand-logo">
-                <div class="logo-icon">
-                    <i class="fas fa-heartbeat"></i>
+            <div class="text-center lg:text-left mb-10 fade-up delay-1">
+                <div class="w-14 h-14 rounded-[18px] bg-gradient-to-br from-teal-400 to-sky-500 text-white flex items-center justify-center shadow-lg shadow-teal-500/30 mx-auto lg:mx-0 mb-6 transform hover:scale-105 transition-transform">
+                    <i class="fas fa-heartbeat text-3xl"></i>
                 </div>
-                <div class="logo-text">
-                    <h4>SIPOSYANDU</h4>
-                    <span>Pelayanan Kesehatan Terpadu</span>
-                </div>
-            </div>
-
-            <div class="welcome-text">
-                <h2>Selamat Datang Kembali</h2>
-                <p>Silakan pilih metode login Anda untuk masuk.</p>
+                <h1 class="text-3xl sm:text-4xl font-black text-slate-900 font-poppins mb-3 tracking-tight">Selamat Datang</h1>
+                <p class="text-sm font-medium text-slate-500 leading-relaxed max-w-sm mx-auto lg:mx-0">Portal layanan rekam medis, gizi balita, dan kesehatan terpadu.</p>
             </div>
 
             @if ($errors->any())
-                <div class="alert alert-custom alert-danger mb-4">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ $errors->first() }}</span>
-                </div>
-            @endif
-
-            @if (session('success'))
-                <div class="alert alert-custom alert-success mb-4">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ session('success') }}</span>
-                </div>
-            @endif
-
-            <div class="role-selector">
-                <div class="role-card" onclick="selectRole('email', this)">
-                    <i class="fas fa-user-nurse"></i>
-                    <span>Bidan / Kader</span>
-                </div>
-                <div class="role-card" onclick="selectRole('nik', this)">
-                    <i class="fas fa-users"></i>
-                    <span>Warga</span>
-                </div>
-            </div>
-
-            <form method="POST" action="{{ route('login') }}" id="loginForm">
-                @csrf
-                
-                <div class="form-floating mb-3 position-relative">
-                    <i class="fas fa-user input-group-icon" id="loginIcon"></i>
-                    <input type="text" 
-                           class="form-control" 
-                           id="loginInput" 
-                           name="login" 
-                           placeholder="Masukkan Email / NIK" 
-                           value="{{ old('login') }}"
-                           required 
-                           readonly>
-                    <label for="loginInput" id="loginLabel">Pilih metode login di atas</label>
-                </div>
-
-                <div class="form-floating mb-4 position-relative">
-                    <i class="fas fa-lock input-group-icon"></i>
-                    <input type="password" 
-                           class="form-control" 
-                           id="passwordInput" 
-                           name="password" 
-                           placeholder="Password" 
-                           required>
-                    <label for="passwordInput">Password</label>
-                    <span class="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" 
-                          style="cursor: pointer; color: var(--text-gray);"
-                          onclick="togglePassword()">
-                        <i class="fas fa-eye" id="toggleIcon"></i>
-                    </span>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="remember" id="remember">
-                        <label class="form-check-label text-muted" style="font-size: 13px;" for="remember">
-                            Ingat Saya
-                        </label>
+                <div class="mb-8 p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 shadow-sm fade-up delay-2">
+                    <i class="fas fa-exclamation-circle text-rose-500 text-lg mt-0.5 shrink-0"></i>
+                    <div>
+                        <h4 class="text-[11px] font-black text-rose-800 uppercase tracking-widest mb-1">Akses Ditolak</h4>
+                        <p class="text-[12.5px] font-semibold text-rose-600">{{ $errors->first() }}</p>
                     </div>
-                    <a href="#" class="text-decoration-none" style="font-size: 13px; color: var(--primary);">Lupa Password?</a>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('login.post') }}" class="space-y-6" id="premiumLoginForm">
+                @csrf
+
+                <div class="fade-up delay-2">
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Kredensial Masuk <span class="text-rose-500">*</span></label>
+                    <div class="relative group group-focus-within">
+                        <i class="fas fa-id-badge input-icon"></i>
+                        <input type="text" name="login" value="{{ old('login') }}" class="input-premium" placeholder="NIK, Email, atau Username" required autofocus autocomplete="off">
+                    </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary-custom" id="submitBtn" disabled>
-                    Masuk Sekarang <i class="fas fa-arrow-right ms-2"></i>
-                </button>
-            </form>
+                <div class="fade-up delay-3">
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Kata Sandi <span class="text-rose-500">*</span></label>
+                    <div class="relative group group-focus-within">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" name="password" class="input-premium" placeholder="Masukkan kata sandi rahasia" required autocomplete="current-password">
+                        
+                        <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-teal-600 transition-colors">
+                            <i class="fas fa-eye-slash" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
 
-            <div class="text-center mt-4">
-                <small class="text-muted">Belum punya akun? Hubungi Kader setempat.</small>
-            </div>
+                <div class="flex items-center justify-between pt-2 pl-1 fade-up delay-3">
+                    <label class="flex items-center cursor-pointer group">
+                        <div class="relative flex items-center justify-center">
+                            <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }} class="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded-lg checked:bg-teal-500 checked:border-teal-500 cursor-pointer transition-all">
+                            <i class="fas fa-check absolute text-white text-[10px] opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></i>
+                        </div>
+                        <span class="ml-3 text-[13px] font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Ingat sesi saya</span>
+                    </label>
+                </div>
+
+                <div class="pt-4 fade-up delay-4">
+                    <button type="submit" id="btnSubmitAuth" class="w-full py-4 bg-slate-900 hover:bg-teal-600 text-white text-[14px] font-black rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_30px_rgba(13,148,136,0.3)] transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 tracking-widest uppercase overflow-hidden relative group">
+                        <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                        <span>Masuk Sistem</span>
+                        <i class="fas fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <div class="login-illustration-wrapper">
-            <div class="circle-deco cd-1"></div>
-            <div class="circle-deco cd-2"></div>
+        <div class="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center p-12 bg-gradient-to-br from-teal-500 to-sky-600">
             
-            <div id="lottieAnimation"></div>
-            
-            <h3 class="fw-bold mb-2">Sehat Bersama Kami</h3>
-            <p class="text-white-50 px-4">Pantau kesehatan keluarga dengan mudah, cepat, dan terintegrasi melalui sistem digital Posyandu.</p>
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-80 h-80 bg-teal-300/30 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+
+            <div class="relative z-10 w-full max-w-sm">
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-[32px] p-10 shadow-2xl">
+                    <div class="w-16 h-16 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center mb-8 shadow-inner">
+                        <i class="fas fa-shield-heart text-3xl text-white"></i>
+                    </div>
+                    
+                    <h2 class="text-3xl xl:text-4xl font-black font-poppins text-white leading-tight mb-5 tracking-tight">Kesehatan<br>Digital<br>Terpadu.</h2>
+                    <p class="text-[14px] text-sky-50 font-medium leading-relaxed opacity-90 mb-10">Pencatatan rekam medis terenkripsi, pemantauan gizi anak, dan jadwal imunisasi yang terintegrasi langsung dengan Desa.</p>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="flex -space-x-3 mr-2">
+                            <div class="w-10 h-10 rounded-full bg-rose-400 border-2 border-teal-500 flex items-center justify-center text-white text-xs shadow-md"><i class="fas fa-baby"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-sky-400 border-2 border-teal-500 flex items-center justify-center text-white text-xs shadow-md"><i class="fas fa-user-graduate"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-amber-400 border-2 border-teal-500 flex items-center justify-center text-white text-xs shadow-md"><i class="fas fa-wheelchair"></i></div>
+                        </div>
+                        <span class="text-[10px] font-black text-white tracking-widest uppercase">Semua Warga</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
+</div>
+@endsection
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-
-    <script>
-        // Lottie Animation
-        lottie.loadAnimation({
-            container: document.getElementById('lottieAnimation'),
-            renderer: 'svg',
-            loop: true,
-            autoplay: true,
-            path: 'https://lottie.host/2f3c8c6c-9c4d-4f5a-8b9a-3f8c6c9c9c9c/8b9a3f8c6c.json'
-        });
-
-        const loginInput = document.getElementById('loginInput');
-        const loginLabel = document.getElementById('loginLabel');
-        const loginIcon = document.getElementById('loginIcon');
-        const submitBtn = document.getElementById('submitBtn');
-
-        // Role Selection Logic
-        function selectRole(role, element) {
-            // Remove active class from all cards
-            document.querySelectorAll('.role-card').forEach(card => card.classList.remove('active'));
-            // Add active class to clicked card
-            element.classList.add('active');
-
-            // Enable input
-            loginInput.removeAttribute('readonly');
-            submitBtn.removeAttribute('disabled');
-            loginInput.value = '';
-            loginInput.focus();
-
-            if (role === 'email') {
-                loginInput.type = 'email';
-                loginLabel.textContent = 'Masukkan Email Anda';
-                loginInput.placeholder = 'contoh@posyandu.com';
-                loginIcon.className = 'fas fa-envelope input-group-icon';
-                // Remove NIK formatter
-                loginInput.removeEventListener('input', formatNIK);
-            } else {
-                loginInput.type = 'text';
-                loginLabel.textContent = 'Masukkan 16 Digit NIK';
-                loginInput.placeholder = '1234567890123456';
-                loginIcon.className = 'fas fa-id-card input-group-icon';
-                // Add NIK formatter
-                loginInput.addEventListener('input', formatNIK);
-            }
-        }
-
-        // Format NIK (Only numbers, max 16)
-        function formatNIK(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 16) value = value.substring(0, 16);
-            e.target.value = value;
-        }
-
-        // Toggle Password Visibility
-        function togglePassword() {
-            const passwordInput = document.getElementById('passwordInput');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        // Auto Select if Old Input Exists (Laravel specific)
-        @if(old('login'))
-            window.addEventListener('load', function() {
-                const oldVal = "{{ old('login') }}";
-                const cards = document.querySelectorAll('.role-card');
-                if (oldVal.includes('@')) {
-                    selectRole('email', cards[0]);
-                } else {
-                    selectRole('nik', cards[1]);
+@push('scripts')
+<script>
+    // Konfigurasi Tailwind untuk Animasi Kilau Tombol
+    tailwind.config = {
+        theme: {
+            extend: {
+                keyframes: {
+                    shimmer: {
+                        '100%': { transform: 'translateX(100%)' }
+                    }
                 }
-                loginInput.value = oldVal;
-            });
-        @endif
-    </script>
-</body>
-</html>
+            }
+        }
+    }
+
+    // 👁️ Fitur Tampil/Sembunyi Password
+    function togglePassword() {
+        const pwdInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        
+        if (pwdInput.type === 'password') {
+            pwdInput.type = 'text';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye', 'text-teal-600');
+        } else {
+            pwdInput.type = 'password';
+            eyeIcon.classList.remove('fa-eye', 'text-teal-600');
+            eyeIcon.classList.add('fa-eye-slash');
+        }
+    }
+
+    // 🌟 ANIMASI TRANSAKSI LOGIN SUKSES
+    document.getElementById('premiumLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault(); 
+        
+        const form = this;
+        const btn = document.getElementById('btnSubmitAuth');
+        const overlay = document.getElementById('loginSuccessOverlay');
+        const successCircle = document.getElementById('successCircle');
+
+        // 1. Ubah tombol jadi status loading
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-lg"></i> <span class="ml-2">VERIFIKASI...</span>';
+        btn.classList.add('bg-teal-600', 'opacity-90', 'cursor-wait');
+        
+        // 2. Munculkan Layar Animasi Centang setelah sedikit jeda
+        setTimeout(() => {
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            overlay.classList.add('opacity-100');
+            
+            // Animasi Lingkaran Putih melebar menutupi layar
+            successCircle.classList.remove('w-0', 'h-0');
+            successCircle.classList.add('w-[300vh]', 'h-[300vh]');
+
+            // 3. Submit data asli ke Laravel Controller
+            setTimeout(() => {
+                form.submit();
+            }, 1800);
+
+        }, 700);
+    });
+</script>
+@endpush

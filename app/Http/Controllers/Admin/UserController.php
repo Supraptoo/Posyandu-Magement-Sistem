@@ -1,258 +1,277 @@
 <?php
+/**
+ * PATH   : app/Http/Controllers/Admin/UserController.php
+ * FUNGSI : CRUD akun user warga
+ *          Login via NIK (email = nik@posyandu.user dibuat otomatis)
+ *          Deteksi pasien terhubung (balita/remaja/lansia via NIK)
+ */
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Profile;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use App\Models\Balita;
+use App\Models\Remaja;
+use App\Models\Lansia;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of users
-     */
-    public function index()
+    // ── INDEX ───────────────────────────────────
+    public function index(Request $request)
     {
-        $users = User::with('profile')
-            ->where('role', 'user')
-            ->latest()
-            ->paginate(10);
+        $query = User::with('profile')->where('role', 'user');
 
-        return view('admin.users.index', [
-            'title' => 'Manajemen Warga',
-            'users' => $users
-        ]);
+        if ($search = $request->search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('nik', 'like', "%{$search}%")
+                  ->orWhereHas('profile', fn($p) =>
+                      $p->where('full_name', 'like', "%{$search}%")
+                        ->orWhere('nik', 'like', "%{$search}%")
+                  );
+            });
+        }
+        if ($request->status) $query->where('status', $request->status);
+
+        $users = $query->latest()->paginate($request->per_page ?? 15)->withQueryString();
+        $stats = $this->getStats();
+
+        return view('admin.users.index', compact('users', 'stats'));
     }
 
-    /**
-     * Show the form for creating a new user
-     */
+    // ── CREATE ──────────────────────────────────
     public function create()
     {
-        return view('admin.users.create', [
-            'title' => 'Tambah User Baru'
-        ]);
+        return view('admin.users.create');
     }
 
-    /**
-     * Store a newly created user
-     */
-   public function store(Request $request)
-{
-    $validated = $request->validate([
-        'nik' => 'required|string|size:16|unique:users,nik',
-        'full_name' => 'required|string|max:255',
-        'jenis_kelamin' => 'required|in:L,P',
-        'alamat' => 'required|string',
-        'telepon' => 'nullable|string|max:20',
-        'tempat_lahir' => 'nullable|string|max:100',
-        'tanggal_lahir' => 'nullable|date',
-        'status' => 'required|in:active,inactive',
-    ], [
-        'nik.required' => 'NIK wajib diisi',
-        'nik.size' => 'NIK harus 16 digit',
-        'nik.unique' => 'NIK sudah terdaftar',
-        'full_name.required' => 'Nama lengkap wajib diisi',
-        'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
-        'alamat.required' => 'Alamat wajib diisi',
-    ]);
-
-    DB::beginTransaction();
-    try {
-        // Generate password dari NIK
-        $password = substr($validated['nik'], -6); // Ambil 6 digit terakhir NIK
-
-        // Buat user
-        $userData = [
-            'nik' => $validated['nik'],
-            'password' => Hash::make($password),
-            'role' => 'user',
-            'status' => $validated['status'],
-            'name' => $validated['full_name'], // HARUS ADA - kolom name wajib
-            'email' => $validated['nik'] . '@posyandu.user', // Buat email dari NIK
-        ];
-        
-        // Tambahkan created_by hanya jika kolomnya ada
-        if (Schema::hasColumn('users', 'created_by')) {
-            $userData['created_by'] = Auth::id();
-        }
-        
-        $user = User::create($userData);
-
-        // Buat profile
-        Profile::create([
-            'user_id' => $user->id,
-            'full_name' => $validated['full_name'],
-            'nik' => $validated['nik'],
-            'jenis_kelamin' => $validated['jenis_kelamin'],
-            'alamat' => $validated['alamat'],
-            'telepon' => $validated['telepon'],
-            'tempat_lahir' => $validated['tempat_lahir'],
-            'tanggal_lahir' => $validated['tanggal_lahir'],
+    // ── STORE ───────────────────────────────────
+    public function store(Request $request)
+    {
+        $request->validate([
+            'full_name'     => 'required|string|max:191',
+            'nik'           => 'required|digits:16|unique:users,nik|unique:profiles,nik',
+            'jenis_kelamin' => 'required|in:L,P',
+            'telepon'       => 'required|string|max:20',
+            'alamat'        => 'required|string',
+            'tempat_lahir'  => 'required|string|max:100',
+            'tanggal_lahir' => 'required|date',
+            'status'        => 'required|in:active,inactive',
+        ], [
+            'nik.digits' => 'NIK harus tepat 16 digit angka.',
+            'nik.unique' => 'NIK ini sudah terdaftar di sistem.',
         ]);
 
-        DB::commit();
+        $password = $this->makePassword();
 
-        // Simpan password ke session untuk ditampilkan
-        session()->flash('generated_password', $password);
-        session()->flash('user_nik', $validated['nik']);
-        session()->flash('user_name', $validated['full_name']);
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'name'     => $request->full_name,
+                'email'    => $request->nik . '@posyandu.user',
+                'nik'      => $request->nik,
+                'password' => Hash::make($password),
+                'role'     => 'user',
+                'status'   => $request->status,
+            ]);
+
+            $user->profile()->create([
+                'user_id'       => $user->id,
+                'full_name'     => $request->full_name,
+                'nik'           => $request->nik,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'telepon'       => $request->telepon,
+                'alamat'        => $request->alamat,
+                'tempat_lahir'  => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+            ]);
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('UserController::store — ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal membuat akun. Silakan coba lagi.');
+        }
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User berhasil ditambahkan!');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->withErrors(['error' => 'Gagal menambahkan user: ' . $e->getMessage()])
-            ->withInput();
+            ->with('success', 'Akun warga berhasil dibuat.')
+            ->with('generated_password', $password)
+            ->with('user_name', $request->full_name)
+            ->with('user_nik', $request->nik);
     }
-}
 
-    /**
-     * Display the specified user
-     */
+    // ── SHOW ────────────────────────────────────
     public function show($id)
     {
-        $user = User::with('profile')->findOrFail($id);
+        $user       = User::with('profile')->where('role', 'user')->findOrFail($id);
+        $linkedData = $this->detectLinkedPatients($user);
 
-        return view('admin.users.show', [
-            'title' => 'Detail User',
-            'user' => $user
-        ]);
+        return view('admin.users.show', compact('user', 'linkedData'));
     }
 
-    /**
-     * Show the form for editing the specified user
-     */
+    // ── EDIT ────────────────────────────────────
     public function edit($id)
     {
-        $user = User::with('profile')->findOrFail($id);
-
-        return view('admin.users.edit', [
-            'title' => 'Edit User',
-            'user' => $user
-        ]);
+        $user = User::with('profile')->where('role', 'user')->findOrFail($id);
+        return view('admin.users.edit', compact('user'));
     }
 
-    /**
-     * Update the specified user
-     */
-   public function update(Request $request, $id)
-{
-    $user = User::findOrFail($id);
-
-    $validated = $request->validate([
-        'nik' => 'required|string|size:16|unique:users,nik,' . $user->id,
-        'full_name' => 'required|string|max:255',
-        'jenis_kelamin' => 'required|in:L,P',
-        'alamat' => 'required|string',
-        'telepon' => 'nullable|string|max:20',
-        'tempat_lahir' => 'nullable|string|max:100',
-        'tanggal_lahir' => 'nullable|date',
-        'status' => 'required|in:active,inactive',
-    ]);
-
-    DB::beginTransaction();
-    try {
-        // Update user
-        $user->update([
-            'nik' => $validated['nik'],
-            'status' => $validated['status'],
-            'name' => $validated['full_name'], // Update name juga
-        ]);
-
-        // Update profile
-        if ($user->profile) {
-            $user->profile->update([
-                'full_name' => $validated['full_name'],
-                'nik' => $validated['nik'],
-                'jenis_kelamin' => $validated['jenis_kelamin'],
-                'alamat' => $validated['alamat'],
-                'telepon' => $validated['telepon'],
-                'tempat_lahir' => $validated['tempat_lahir'],
-                'tanggal_lahir' => $validated['tanggal_lahir'],
-            ]);
-        } else {
-            // Jika profile tidak ada, buat baru
-            Profile::create([
-                'user_id' => $user->id,
-                'full_name' => $validated['full_name'],
-                'nik' => $validated['nik'],
-                'jenis_kelamin' => $validated['jenis_kelamin'],
-                'alamat' => $validated['alamat'],
-                'telepon' => $validated['telepon'],
-                'tempat_lahir' => $validated['tempat_lahir'],
-                'tanggal_lahir' => $validated['tanggal_lahir'],
-            ]);
-        }
-
-        DB::commit();
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User berhasil diupdate!');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->withErrors(['error' => 'Gagal mengupdate user: ' . $e->getMessage()])
-            ->withInput();
-    }
-}
-
-    /**
-     * Remove the specified user
-     */
-    public function destroy($id)
+    // ── UPDATE ──────────────────────────────────
+    public function update(Request $request, $id)
     {
+        $user = User::with('profile')->where('role', 'user')->findOrFail($id);
+        $profileId = $user->profile?->id;
+
+        $request->validate([
+            'full_name'     => 'required|string|max:191',
+            'nik'           => "required|digits:16|unique:users,nik,{$id}|unique:profiles,nik,{$profileId}",
+            'jenis_kelamin' => 'required|in:L,P',
+            'telepon'       => 'required|string|max:20',
+            'alamat'        => 'required|string',
+            'tempat_lahir'  => 'required|string|max:100',
+            'tanggal_lahir' => 'required|date',
+            'status'        => 'required|in:active,inactive',
+        ]);
+
+        DB::beginTransaction();
         try {
-            $user = User::findOrFail($id);
-            
-            // Cek apakah user ini adalah admin
-            if ($user->role === 'admin') {
-                return back()->withErrors(['error' => 'Admin tidak dapat dihapus!']);
+            $user->update([
+                'name'   => $request->full_name,
+                'nik'    => $request->nik,
+                'email'  => $request->nik . '@posyandu.user',
+                'status' => $request->status,
+            ]);
+
+            $profileData = [
+                'full_name'     => $request->full_name,
+                'nik'           => $request->nik,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'telepon'       => $request->telepon,
+                'alamat'        => $request->alamat,
+                'tempat_lahir'  => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+            ];
+
+            if ($user->profile) {
+                $user->profile->update($profileData);
+            } else {
+                $user->profile()->create(array_merge($profileData, ['user_id' => $user->id]));
             }
 
-            // Hapus user (profile akan terhapus otomatis karena cascade)
-            $user->delete();
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Gagal memperbarui data.');
+        }
 
-            return redirect()->route('admin.users.index')
-                ->with('success', 'User berhasil dihapus!');
+        return redirect()->route('admin.users.show', $id)
+            ->with('success', 'Data warga berhasil diperbarui.');
+    }
 
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Gagal menghapus user: ' . $e->getMessage()]);
+    // ── DESTROY ─────────────────────────────────
+    public function destroy($id)
+    {
+        $user = User::where('role', 'user')->findOrFail($id);
+        $name = $user->profile?->full_name ?? $user->name;
+        $user->delete();
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Akun warga {$name} berhasil dihapus.");
+    }
+
+    // ── GENERATE PASSWORD (acak baru) ────────────
+    public function generatePassword($id)
+    {
+        $user     = User::where('role', 'user')->findOrFail($id);
+        $password = $this->makePassword();
+        $user->update(['password' => Hash::make($password)]);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Password baru berhasil dibuat.')
+            ->with('generated_password', $password)
+            ->with('user_name', $user->profile?->full_name ?? $user->name)
+            ->with('user_nik', $user->nik);
+    }
+
+    // ── RESET PASSWORD (default: 6 digit NIK + "Ps!") ──
+    public function resetPassword($id)
+    {
+        $user     = User::where('role', 'user')->findOrFail($id);
+        $nik      = $user->nik ?? $user->profile?->nik ?? '000000000000000';
+        $password = substr($nik, -6) . 'Ps!';
+        $user->update(['password' => Hash::make($password)]);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Password direset ke default.')
+            ->with('reset_password', $password)
+            ->with('reset_name', $user->profile?->full_name ?? $user->name)
+            ->with('reset_nik', $nik);
+    }
+
+    // ── HELPERS ─────────────────────────────────
+
+    private function getStats(): array
+    {
+        try {
+            return [
+                'total'    => User::where('role', 'user')->count(),
+                'aktif'    => User::where('role', 'user')->where('status', 'active')->count(),
+                'nonaktif' => User::where('role', 'user')->where('status', 'inactive')->count(),
+            ];
+        } catch (\Throwable $e) {
+            return ['total' => 0, 'aktif' => 0, 'nonaktif' => 0];
         }
     }
 
     /**
-     * Reset user password
+     * Deteksi data pasien yang terhubung dengan user berdasarkan:
+     * - user_id langsung
+     * - NIK matching (balita: nik_ibu/nik_ayah, remaja/lansia: nik)
+     *
+     * PENTING: ini sama persis dengan logika di User\DashboardController
+     * supaya konsisten antara admin view dan user dashboard
      */
-    public function resetPassword($id)
+    private function detectLinkedPatients(User $user): array
     {
+        $nik = $user->nik ?? $user->profile?->nik;
+
         try {
-            $user = User::findOrFail($id);
+            if ($nik) {
+                $balita = Balita::where('user_id', $user->id)
+                    ->orWhere('nik_ibu', $nik)
+                    ->orWhere('nik_ayah', $nik)
+                    ->get();
+            } else {
+                $balita = Balita::where('user_id', $user->id)->get();
+            }
+        } catch (\Throwable $e) { $balita = collect(); }
 
-            // Generate password baru (6 digit terakhir NIK)
-            $newPassword = substr($user->nik, -6);
+        try {
+            $remaja = $nik
+                ? Remaja::where('user_id', $user->id)->orWhere('nik', $nik)->first()
+                : Remaja::where('user_id', $user->id)->first();
+        } catch (\Throwable $e) { $remaja = null; }
 
-            // Update password
-            $user->update([
-                'password' => Hash::make($newPassword),
-            ]);
+        try {
+            $lansia = $nik
+                ? Lansia::where('user_id', $user->id)->orWhere('nik', $nik)->first()
+                : Lansia::where('user_id', $user->id)->first();
+        } catch (\Throwable $e) { $lansia = null; }
 
-            // Simpan password ke session
-            session()->flash('reset_password', $newPassword);
-            session()->flash('reset_nik', $user->nik);
-            session()->flash('reset_name', $user->profile ? $user->profile->full_name : 'N/A');
+        return compact('balita', 'remaja', 'lansia');
+    }
 
-            return redirect()->route('admin.users.index')
-                ->with('success', 'Password berhasil direset!');
-
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Gagal mereset password: ' . $e->getMessage()]);
+    private function makePassword(): string
+    {
+        $chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#';
+        $pass  = '';
+        for ($i = 0; $i < 8; $i++) {
+            $pass .= $chars[random_int(0, strlen($chars) - 1)];
         }
+        return $pass;
     }
 }

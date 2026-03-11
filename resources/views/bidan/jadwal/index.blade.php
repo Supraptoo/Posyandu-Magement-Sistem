@@ -1,144 +1,167 @@
 @extends('layouts.bidan')
 
-@section('title', 'Jadwal Posyandu')
-@section('page-title', 'Jadwal Kegiatan')
-@section('page-subtitle', 'Atur jadwal kegiatan Posyandu bulan ini')
+@section('title', 'Kelola Jadwal Posyandu')
+@section('page-name', 'Manajemen Jadwal')
+
+@push('styles')
+<style>
+    .animate-slide-up { opacity: 0; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+@endpush
 
 @section('content')
-<div class="row">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-                <h5 class="fw-bold mb-0 text-primary">Buat Jadwal Baru</h5>
+<div id="smoothLoader" class="fixed inset-0 bg-slate-50/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
+    <div class="relative w-20 h-20 flex items-center justify-center mb-4">
+        <div class="absolute inset-0 border-4 border-cyan-100 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-cyan-600 rounded-full border-t-transparent animate-spin"></div>
+        <i class="fas fa-calendar-alt text-cyan-600 text-2xl animate-pulse"></i>
+    </div>
+    <p class="text-cyan-800 font-poppins font-extrabold tracking-widest text-sm animate-pulse" id="loaderText">MEMUAT DATA...</p>
+</div>
+
+<div class="max-w-7xl mx-auto animate-slide-up">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-[18px] bg-cyan-100 text-cyan-600 flex items-center justify-center text-2xl shadow-inner border border-cyan-200">
+                <i class="fas fa-calendar-check"></i>
             </div>
-            <div class="card-body px-4 pb-4">
-                <form action="{{ route('bidan.jadwal.store') }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="form-label">Judul Kegiatan</label>
-                        <input type="text" name="judul" class="form-control" placeholder="Contoh: Posyandu Melati I" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kategori</label>
-                        <select name="kategori" class="form-select" required>
-                            <option value="posyandu">Posyandu</option>
-                            <option value="imunisasi">Imunisasi</option>
-                            <option value="pemeriksaan">Pemeriksaan</option>
-                            <option value="konseling">Konseling</option>
-                            <option value="lainnya">Lainnya</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Target Peserta</label>
-                        <select name="target_peserta" class="form-select" required>
-                            <option value="semua">Semua</option>
-                            <option value="balita">Balita</option>
-                            <option value="remaja">Remaja</option>
-                            <option value="lansia">Lansia</option>
-                            <option value="ibu_hamil">Ibu Hamil</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Tanggal Pelaksanaan</label>
-                        <input type="date" name="tanggal" class="form-control" required>
-                    </div>
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Jam Mulai</label>
-                            <input type="time" name="waktu_mulai" class="form-control" required>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Jam Selesai</label>
-                            <input type="time" name="waktu_selesai" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Lokasi</label>
-                        <input type="text" name="lokasi" class="form-control" placeholder="Balai Desa..." required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Keterangan (Opsional)</label>
-                        <textarea name="deskripsi" class="form-control" rows="2" placeholder="Catatan untuk kader/warga..."></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 py-2">
-                        <i class="fas fa-paper-plane me-2"></i> Terbitkan Jadwal
-                    </button>
-                </form>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-poppins">Jadwal Kegiatan</h1>
+                <p class="text-slate-500 mt-1 font-medium text-sm">Kelola agenda posyandu dan informasikan otomatis ke warga.</p>
             </div>
         </div>
+        <a href="{{ route('bidan.jadwal.create') }}" class="smooth-route inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-black text-sm rounded-xl hover:from-cyan-600 hover:to-cyan-700 shadow-[0_8px_20px_rgba(8,145,178,0.25)] hover:-translate-y-0.5 transition-all duration-300">
+            <i class="fas fa-plus"></i> Buat Jadwal Baru
+        </a>
     </div>
 
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-header bg-white py-3">
-                <h6 class="fw-bold mb-0">Daftar Jadwal Kegiatan</h6>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="ps-4">Tanggal</th>
-                                <th>Kegiatan</th>
-                                <th>Waktu</th>
-                                <th>Lokasi</th>
-                                <th>Status</th>
-                                <th class="text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($jadwals as $jadwal)
-                            <tr>
-                                <td class="ps-4 fw-bold text-dark">
-                                    {{-- Pastikan nama kolom sesuai: 'tanggal' bukan 'tanggal_kegiatan' --}}
-                                    {{ $jadwal->tanggal ? $jadwal->tanggal->format('d M Y') : '-' }}
-                                </td>
-                                <td>
-                                    <span class="d-block fw-bold">{{ $jadwal->judul }}</span>
-                                    <small class="text-muted text-uppercase" style="font-size: 10px;">{{ $jadwal->kategori }}</small>
-                                </td>
-                                <td class="text-muted text-sm">
-                                    {{-- Gunakan pengecekan null sebelum format() --}}
-                                    {{ $jadwal->waktu_mulai ? $jadwal->waktu_mulai->format('H:i') : '--:--' }} - 
-                                    {{ $jadwal->waktu_selesai ? $jadwal->waktu_selesai->format('H:i') : '--:--' }}
-                                </td>
-                                <td>{{ $jadwal->lokasi }}</td>
-                                <td>
-                                    @if($jadwal->status == 'dibatalkan')
-                                        <span class="badge bg-danger">Dibatalkan</span>
-                                    @elseif($jadwal->tanggal && $jadwal->tanggal->isPast())
-                                        <span class="badge bg-secondary">Selesai</span>
-                                    @else
-                                        <span class="badge bg-success">Aktif</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    <div class="btn-group">
-                                        <a href="{{ route('bidan.jadwal.edit', $jadwal->id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="{{ route('bidan.jadwal.destroy', $jadwal->id) }}" method="POST" onsubmit="return confirm('Hapus jadwal ini?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">Belum ada jadwal.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="p-3">
-                    {{ $jadwals->links() }}
-                </div>
+    <div class="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        
+        <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-list-ul text-cyan-600"></i>
+                <h3 class="font-extrabold text-slate-800">Daftar Agenda</h3>
             </div>
         </div>
+
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+                <thead>
+                    <tr class="bg-white border-b border-slate-100">
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest w-16">No</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Waktu & Tanggal</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Informasi Kegiatan</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Target & Kategori</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-center">Status</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    @forelse($jadwals as $index => $jadwal)
+                    <tr class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="px-6 py-4 text-xs font-bold text-slate-400 align-top">{{ $jadwals->firstItem() + $index }}</td>
+                        
+                        <td class="px-6 py-4 align-top">
+                            <p class="font-black text-slate-800 text-sm mb-1">{{ \Carbon\Carbon::parse($jadwal->tanggal)->translatedFormat('d F Y') }}</p>
+                            <p class="text-[11px] font-bold text-cyan-600 bg-cyan-50 inline-block px-2 py-0.5 rounded border border-cyan-100">
+                                <i class="fas fa-clock mr-1"></i> {{ date('H:i', strtotime($jadwal->waktu_mulai)) }} - {{ date('H:i', strtotime($jadwal->waktu_selesai)) }}
+                            </p>
+                        </td>
+
+                        <td class="px-6 py-4 align-top">
+                            <p class="font-bold text-slate-800 text-sm mb-1">{{ $jadwal->judul }}</p>
+                            <p class="text-xs font-semibold text-slate-500 line-clamp-2 mb-1">{{ $jadwal->deskripsi ?? 'Tidak ada deskripsi.' }}</p>
+                            <p class="text-[11px] font-bold text-slate-400"><i class="fas fa-map-marker-alt text-rose-400 mr-1"></i> {{ $jadwal->lokasi }}</p>
+                        </td>
+
+                        <td class="px-6 py-4 align-top">
+                            <span class="inline-block px-2 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-extrabold rounded border border-indigo-100 uppercase mb-1">
+                                Kategori: {{ $jadwal->kategori }}
+                            </span><br>
+                            <span class="inline-block px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-extrabold rounded border border-emerald-100 uppercase">
+                                Target: {{ str_replace('_', ' ', $jadwal->target_peserta) }}
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-4 text-center align-middle">
+                            @php
+                                $statusConf = match($jadwal->status) {
+                                    'aktif' => ['bg-emerald-100 text-emerald-700', 'Tersedia'],
+                                    'selesai' => ['bg-slate-100 text-slate-600', 'Selesai'],
+                                    'dibatalkan' => ['bg-rose-100 text-rose-700', 'Dibatalkan'],
+                                    default => ['bg-slate-100 text-slate-600', $jadwal->status]
+                                };
+                            @endphp
+                            <span class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider {{ $statusConf[0] }}">
+                                {{ $statusConf[1] }}
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-4 text-right align-middle">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ route('bidan.jadwal.edit', $jadwal->id) }}" class="smooth-route w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center hover:bg-amber-100 transition-colors" title="Edit Jadwal">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('bidan.jadwal.destroy', $jadwal->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jadwal ini secara permanen?');" class="m-0 p-0">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" onclick="showLoader('MENGHAPUS JADWAL...')" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-100 transition-colors" title="Hapus Jadwal">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center py-16">
+                            <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mx-auto mb-4 text-3xl shadow-inner"><i class="fas fa-calendar-times"></i></div>
+                            <h4 class="font-black text-slate-700 text-sm">Belum Ada Jadwal</h4>
+                            <p class="text-xs text-slate-500 mt-1">Silakan klik "Buat Jadwal Baru" untuk menambahkan agenda.</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($jadwals->hasPages())
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 pagination-wrapper">
+            {{ $jadwals->links() }}
+        </div>
+        @endif
     </div>
+
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    const showLoader = (text = 'MEMUAT SISTEM...') => {
+        const loader = document.getElementById('smoothLoader');
+        if(loader) {
+            document.getElementById('loaderText').innerText = text;
+            loader.style.display = 'flex';
+            loader.offsetHeight; 
+            loader.classList.remove('opacity-0', 'pointer-events-none');
+            loader.classList.add('opacity-100');
+        }
+    };
+    window.addEventListener('pageshow', () => {
+        const loader = document.getElementById('smoothLoader');
+        if(loader) {
+            loader.classList.remove('opacity-100');
+            loader.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => loader.style.display = 'none', 300);
+        }
+    });
+    document.querySelectorAll('.smooth-route, .pagination-wrapper a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if(!this.classList.contains('target-blank') && this.target !== '_blank' && !e.ctrlKey) {
+                showLoader();
+            }
+        });
+    });
+</script>
+@endpush

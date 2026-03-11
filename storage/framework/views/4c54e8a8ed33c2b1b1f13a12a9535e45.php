@@ -1,462 +1,90 @@
-<style>
-    /* Styling khusus Sidebar dengan palet warna menarik */
-    :root {
-        --sidebar-primary: #5e72e4;
-        --sidebar-secondary: #825ee4;
-        --sidebar-bg: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
-        --sidebar-text-light: #c7d2fe;
-        --sidebar-text-lighter: #e0e7ff;
-        --sidebar-border: rgba(99, 102, 241, 0.3);
-        --sidebar-hover: rgba(99, 102, 241, 0.2);
-        --sidebar-active: rgba(99, 102, 241, 0.3);
-        --sidebar-width: 280px;
-        --sidebar-collapsed: 80px;
-    }
-
-    .sidebar {
-        width: var(--sidebar-width);
-        min-width: var(--sidebar-width);
-        background: var(--sidebar-bg);
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 1100;
-        overflow-y: auto;
-        overflow-x: hidden;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .sidebar.collapsed {
-        width: var(--sidebar-collapsed);
-        min-width: var(--sidebar-collapsed);
-    }
-
-    .sidebar::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .sidebar::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 3px;
-    }
-
-    .sidebar::-webkit-scrollbar-thumb {
-        background: rgba(199, 210, 254, 0.5);
-        border-radius: 3px;
-    }
-
-    .sidebar::-webkit-scrollbar-thumb:hover {
-        background: rgba(199, 210, 254, 0.7);
-    }
-
-    /* Brand Section */
-    .sidebar-brand {
-        padding: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        border-bottom: 1px solid var(--sidebar-border);
-        position: relative;
-        overflow: hidden;
-        min-height: 80px;
-        transition: all 0.4s ease;
-    }
-
-    .sidebar-brand::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-        animation: shimmer 3s infinite linear;
-    }
-
-    @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-
-    .brand-icon {
-        width: 44px;
-        height: 44px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-        position: relative;
-        z-index: 1;
-        flex-shrink: 0;
-        transition: all 0.3s ease;
-    }
-
-    .brand-icon:hover {
-        transform: rotate(15deg) scale(1.1);
-    }
-
-    .brand-text {
-        position: relative;
-        z-index: 1;
-        overflow: hidden;
-        transition: all 0.4s ease;
-    }
-
-    .sidebar.collapsed .brand-text {
-        opacity: 0;
-        width: 0;
-        margin: 0;
-    }
-
-    .brand-text h6 {
-        margin: 0;
-        font-weight: 700;
-        color: white;
-        font-size: 1.1rem;
-        letter-spacing: 0.5px;
-    }
-
-    .brand-text small {
-        color: var(--sidebar-text-light);
-        font-size: 0.75rem;
-        margin-top: 0.1rem;
-        display: block;
-    }
-
-    
-
-    /* Navigation */
-    .nav {
-        flex: 1;
-        padding: 1rem 0;
-        overflow-y: auto;
-    }
-
-    .nav-label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: var(--sidebar-text-light);
-        padding: 1rem 1.5rem 0.5rem;
-        letter-spacing: 1px;
-        margin-top: 0.5rem;
-        transition: all 0.4s ease;
-        opacity: 0.8;
-        position: relative;
-    }
-
-    .sidebar.collapsed .nav-label {
-        opacity: 0;
-        height: 0;
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-    }
-
-    .nav-label::after {
-        content: '';
-        position: absolute;
-        left: 1.5rem;
-        right: 1.5rem;
-        bottom: -0.25rem;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, var(--sidebar-border), transparent);
-    }
-
-    /* Navigation Links */
-    .nav-link-custom {
-        display: flex;
-        align-items: center;
-        padding: 0.85rem 1.5rem;
-        color: var(--sidebar-text-lighter);
-        text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        margin: 0.15rem 0.75rem;
-        border-radius: 10px;
-        font-weight: 500;
-        font-size: 0.95rem;
-    }
-
-    .nav-link-custom::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 3px;
-        background: linear-gradient(to bottom, #667eea, #764ba2);
-        transform: scaleY(0);
-        transition: transform 0.3s ease;
-        border-radius: 0 3px 3px 0;
-    }
-
-    .nav-link-custom:hover {
-        background: var(--sidebar-hover);
-        color: white;
-        transform: translateX(5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .nav-link-custom:hover::before {
-        transform: scaleY(1);
-    }
-
-    .nav-link-custom.active {
-        background: var(--sidebar-active);
-        color: white;
-        font-weight: 600;
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-    }
-
-    .nav-link-custom.active::before {
-        transform: scaleY(1);
-    }
-
-    .nav-link-custom i {
-        width: 22px;
-        margin-right: 12px;
-        font-size: 1.1rem;
-        text-align: center;
-        flex-shrink: 0;
-        transition: all 0.3s ease;
-    }
-
-    .nav-link-custom:hover i {
-        transform: scale(1.15);
-    }
-
-    .nav-link-custom span {
-        white-space: nowrap;
-        overflow: hidden;
-        transition: opacity 0.4s ease;
-    }
-
-    /* Collapsed state */
-    .sidebar.collapsed .nav-link-custom {
-        padding: 0.85rem;
-        margin: 0.15rem auto;
-        width: 50px;
-        height: 50px;
-        justify-content: center;
-    }
-
-    .sidebar.collapsed .nav-link-custom span {
-        opacity: 0;
-        width: 0;
-        position: absolute;
-    }
-
-    .sidebar.collapsed .nav-link-custom i {
-        margin-right: 0;
-        font-size: 1.2rem;
-    }
-
-    /* Tooltip for collapsed state */
-    .nav-link-custom[data-tooltip] {
-        position: relative;
-    }
-
-    .nav-link-custom[data-tooltip]::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        left: 100%;
-        top: 50%;
-        transform: translateY(-50%) translateX(10px);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        white-space: nowrap;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 1000;
-        pointer-events: none;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .nav-link-custom[data-tooltip]:hover::after {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(-50%) translateX(15px);
-    }
-
-    /* Icon colors */
-    .nav-link-custom i.fa-th-large { color: #60a5fa; }
-    .nav-link-custom i.fa-baby { color: #34d399; }
-    .nav-link-custom i.fa-user-graduate { color: #fbbf24; }
-    .nav-link-custom i.fa-wheelchair { color: #f87171; }
-    .nav-link-custom i.fa-stethoscope { color: #ef4444; }
-    .nav-link-custom i.fa-file-medical { color: #8b5cf6; }
-    .nav-link-custom i.fa-calendar-alt { color: #a78bfa; }
-
-    /* Responsive */
-    @media (max-width: 991.98px) {
-        .sidebar {
-            transform: translateX(-100%);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        .sidebar.show {
-            transform: translateX(0);
-        }
-        
-        .sidebar.collapsed {
-            width: var(--sidebar-width);
-            min-width: var(--sidebar-width);
-        }
-    }
-
-    /* Animation on load */
-    @keyframes slideInLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .nav-link-custom {
-        animation: slideInLeft 0.4s ease-out;
-        animation-fill-mode: both;
-    }
-
-    .nav-link-custom:nth-child(1) { animation-delay: 0.1s; }
-    .nav-link-custom:nth-child(2) { animation-delay: 0.15s; }
-    .nav-link-custom:nth-child(3) { animation-delay: 0.2s; }
-    .nav-link-custom:nth-child(4) { animation-delay: 0.25s; }
-    .nav-link-custom:nth-child(5) { animation-delay: 0.3s; }
-    .nav-link-custom:nth-child(6) { animation-delay: 0.35s; }
-    .nav-link-custom:nth-child(7) { animation-delay: 0.4s; }
-    .nav-link-custom:nth-child(8) { animation-delay: 0.45s; }
-</style>
-
 <?php
-    // Menghitung jumlah antrian validasi (diagnosa masih kosong) untuk bulan ini
-    $pendingCount = \App\Models\Pemeriksaan::whereMonth('created_at', \Carbon\Carbon::now()->month)
-        ->where(function($q) {
-            $q->whereNull('diagnosa')
-              ->orWhere('diagnosa', '');
-        })->count();
+    $pendingCount = \App\Models\Pemeriksaan::where('status_verifikasi', 'pending')->count();
+        
+    function activeMenu($routePattern) {
+        return request()->routeIs($routePattern) 
+            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_8px_16px_rgba(8,145,178,0.25)] transform scale-[1.02] transition-all' 
+            : 'text-slate-500 hover:bg-slate-50 hover:text-cyan-700 transition-all border border-transparent hover:border-slate-100';
+    }
+    
+    function activeIcon($routePattern) {
+        return request()->routeIs($routePattern) ? 'text-white' : 'text-slate-400 group-hover:text-cyan-500';
+    }
+    
+    $isDataWargaActive = request()->routeIs('bidan.pasien.*');
 ?>
 
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="space-y-7">
+    
+    <div>
+        <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Overview</p>
+        <a href="<?php echo e(route('bidan.dashboard')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm <?php echo e(activeMenu('bidan.dashboard')); ?>">
+            <i class="fas fa-th-large w-6 text-center text-[18px] transition-colors <?php echo e(activeIcon('bidan.dashboard')); ?>"></i>
+            <span class="font-poppins tracking-wide">Dashboard Utama</span>
+        </a>
+    </div>
 
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-        <div class="brand-icon">
-            <i class="fas fa-heartbeat"></i>
-        </div>
-        <div class="brand-text">
-            <h6 class="mb-0 fw-bold">E-Posyandu</h6>
-            <small style="font-size: 0.7rem; opacity: 0.8;">Portal Medis Bidan</small>
+    <div>
+        <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Layanan Klinis</p>
+        <div class="space-y-2">
+            <a href="<?php echo e(route('bidan.pemeriksaan.index')); ?>" class="smooth-route group flex items-center justify-between px-4 py-3 rounded-2xl font-bold text-sm <?php echo e(activeMenu('bidan.pemeriksaan.index')); ?>">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-user-md w-6 text-center text-[18px] transition-colors <?php echo e(activeIcon('bidan.pemeriksaan.index')); ?>"></i>
+                    <span class="font-poppins tracking-wide">Validasi Medis</span>
+                </div>
+                <?php if($pendingCount > 0): ?>
+                    <span class="bg-rose-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.5)]"><?php echo e($pendingCount); ?></span>
+                <?php endif; ?>
+            </a>
+
+            <a href="<?php echo e(route('bidan.pemeriksaan.create')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm <?php echo e(activeMenu('bidan.pemeriksaan.create')); ?>">
+                <i class="fas fa-stethoscope w-6 text-center text-[18px] transition-colors <?php echo e(activeIcon('bidan.pemeriksaan.create')); ?>"></i>
+                <span class="font-poppins tracking-wide">Input Pemeriksaan</span>
+            </a>
+
+            <a href="<?php echo e(route('bidan.rekam-medis.index')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm <?php echo e(activeMenu('bidan.rekam-medis*')); ?>">
+                <i class="fas fa-notes-medical w-6 text-center text-[18px] transition-colors <?php echo e(activeIcon('bidan.rekam-medis*')); ?>"></i>
+                <span class="font-poppins tracking-wide">Buku Rekam Medis</span>
+            </a>
         </div>
     </div>
 
-    <nav class="nav-content">
-        
-        <a class="nav-link-custom <?php echo e(request()->routeIs('bidan.dashboard') ? 'active' : ''); ?>" 
-           href="<?php echo e(route('bidan.dashboard')); ?>"
-           data-tooltip="Dashboard">
-            <i class="fas fa-th-large"></i> <span>Dashboard</span>
-        </a>
-
-        <div class="nav-label">Layanan Medis</div>
-
-        <a class="nav-link-custom <?php echo e(request()->routeIs('bidan.pemeriksaan.create') ? 'active' : ''); ?>" 
-           href="<?php echo e(route('bidan.pemeriksaan.create')); ?>"
-           data-tooltip="Input Manual">
-            <i class="fas fa-stethoscope text-primary"></i> <span>Input Manual</span>
-        </a>
-
-        <a class="nav-link-custom <?php echo e(request()->routeIs('bidan.pemeriksaan.index') || request()->routeIs('bidan.pemeriksaan.show') ? 'active' : ''); ?>" 
-           href="<?php echo e(route('bidan.pemeriksaan.index')); ?>"
-           data-tooltip="Riwayat Medis">
-            <i class="fas fa-file-medical text-danger"></i> 
-            <span class="d-flex justify-content-between align-items-center w-100 pe-2">
-                Riwayat & Validasi
-                <?php if($pendingCount > 0): ?>
-                    
-                    <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem; padding: 0.25em 0.6em;"><?php echo e($pendingCount); ?></span>
-                <?php endif; ?>
-            </span>
-        </a>
-
-        <div class="nav-label">Data Warga</div>
-        
-        <a class="nav-link-custom <?php echo e(request()->routeIs('bidan.pasien.balita') ? 'active' : ''); ?>" 
-           href="<?php echo e(route('bidan.pasien.balita')); ?>"
-           data-tooltip="Data Balita">
-            <i class="fas fa-baby text-info"></i> <span>Data Balita</span>
-        </a>
-        
-        <a class="nav-link-custom <?php echo e(request()->routeIs('bidan.pasien.remaja') ? 'active' : ''); ?>" 
-           href="<?php echo e(route('bidan.pasien.remaja')); ?>"
-           data-tooltip="Data Remaja">
-            <i class="fas fa-user-graduate text-success"></i> <span>Data Remaja</span>
-        </a>
-        
-        <a class="nav-link-custom <?php echo e(request()->routeIs('bidan.pasien.lansia') ? 'active' : ''); ?>" 
-           href="<?php echo e(route('bidan.pasien.lansia')); ?>"
-           data-tooltip="Data Lansia">
-            <i class="fas fa-wheelchair text-warning"></i> <span>Data Lansia</span>
-        </a>
-
-        <div class="nav-label">Administrasi</div>
-
-        <a class="nav-link-custom <?php echo e(request()->routeIs('bidan.jadwal.*') ? 'active' : ''); ?>" 
-           href="<?php echo e(route('bidan.jadwal.index')); ?>"
-           data-tooltip="Kelola Jadwal">
-            <i class="fas fa-calendar-alt text-primary"></i> <span>Kelola Jadwal</span>
-        </a>
-
-        <a class="nav-link-custom <?php echo e(request()->routeIs('bidan.laporan.*') ? 'active' : ''); ?>" 
-           href="<?php echo e(route('bidan.laporan.index')); ?>"
-           data-tooltip="Laporan Bulanan">
-            <i class="fas fa-chart-bar text-success"></i> <span>Laporan Bulanan</span>
-        </a>
-
-        <div class="mt-4 pt-3 border-top border-secondary mx-3 mb-4">
-            <a class="nav-link-custom text-danger px-0" 
-               href="<?php echo e(route('logout')); ?>"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-               data-tooltip="Keluar">
-                <i class="fas fa-sign-out-alt"></i> <span>Keluar</span>
-            </a>
-            <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" class="d-none">
-                <?php echo csrf_field(); ?>
-            </form>
+    <div>
+        <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Pemantauan Pasien</p>
+        <div class="space-y-2">
+            <button onclick="toggleSubmenu('menuPasien', 'iconPasien')" class="w-full group flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-sm border border-transparent <?php echo e($isDataWargaActive ? 'bg-cyan-50/80 text-cyan-700 border-cyan-100' : 'text-slate-500 hover:bg-slate-50 hover:text-cyan-700 hover:border-slate-100'); ?>">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-users-viewfinder w-6 text-center text-[18px] transition-colors <?php echo e($isDataWargaActive ? 'text-cyan-600' : 'text-slate-400 group-hover:text-cyan-500'); ?>"></i>
+                    <span class="font-poppins tracking-wide">Database Warga</span>
+                </div>
+                <i id="iconPasien" class="fas fa-chevron-down text-[10px] transition-transform duration-300 <?php echo e($isDataWargaActive ? 'rotate-180 text-cyan-600' : 'text-slate-400'); ?>"></i>
+            </button>
+            
+            <div id="menuPasien" class="grid transition-all duration-300 ease-in-out <?php echo e($isDataWargaActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'); ?>">
+                <div class="overflow-hidden">
+                    <div class="pl-12 pr-2 py-2 space-y-1.5 relative before:absolute before:left-7 before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
+                        <a href="<?php echo e(route('bidan.pasien.balita')); ?>" class="smooth-route block px-4 py-2.5 text-[13px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('bidan.pasien.balita') ? 'text-cyan-700 bg-white shadow-sm border border-cyan-100 before:bg-cyan-500 before:ring-4 before:ring-cyan-50' : 'text-slate-500 hover:text-cyan-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Anak & Balita</a>
+                        <a href="<?php echo e(route('bidan.pasien.remaja')); ?>" class="smooth-route block px-4 py-2.5 text-[13px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('bidan.pasien.remaja') ? 'text-cyan-700 bg-white shadow-sm border border-cyan-100 before:bg-cyan-500 before:ring-4 before:ring-cyan-50' : 'text-slate-500 hover:text-cyan-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Usia Remaja</a>
+                        <a href="<?php echo e(route('bidan.pasien.lansia')); ?>" class="smooth-route block px-4 py-2.5 text-[13px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('bidan.pasien.lansia') ? 'text-cyan-700 bg-white shadow-sm border border-cyan-100 before:bg-cyan-500 before:ring-4 before:ring-cyan-50' : 'text-slate-500 hover:text-cyan-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Lansia (Manula)</a>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
 
-    </nav>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('sidebar');
+    <div>
+        <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Manajemen Data</p>
+        <div class="space-y-2">
+            <a href="<?php echo e(route('bidan.jadwal.index')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm <?php echo e(activeMenu('bidan.jadwal*')); ?>">
+                <i class="fas fa-calendar-check w-6 text-center text-[18px] transition-colors <?php echo e(activeIcon('bidan.jadwal*')); ?>"></i>
+                <span class="font-poppins tracking-wide">Jadwal Posyandu</span>
+            </a>
+            
+            <a href="<?php echo e(route('bidan.laporan.index')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm <?php echo e(activeMenu('bidan.laporan*')); ?>">
+                <i class="fas fa-file-pdf w-6 text-center text-[18px] transition-colors <?php echo e(activeIcon('bidan.laporan*')); ?>"></i>
+                <span class="font-poppins tracking-wide">Cetak Laporan PDF</span>
+            </a>
+        </div>
+    </div>
     
-    // Restore sidebar state
-    if (window.innerWidth >= 992) {
-        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-        if (isCollapsed) {
-            sidebar.classList.add('collapsed');
-        }
-    }
-    
-   
-});
-</script><?php /**PATH C:\xampp\htdocs\POSYANDU\posyandu-management-system\resources\views/partials/sidebar/bidan.blade.php ENDPATH**/ ?>
+</div><?php /**PATH C:\xampp\htdocs\POSYANDU\posyandu-management-system\resources\views/partials/sidebar/bidan.blade.php ENDPATH**/ ?>

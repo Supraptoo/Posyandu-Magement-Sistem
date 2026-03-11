@@ -1,70 +1,66 @@
-<nav class="nav flex-column">
-    <!-- Dashboard -->
-    <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" 
-       href="{{ route('admin.dashboard') }}">
-        <i class="fas fa-tachometer-alt"></i> Dashboard Admin
-    </a>
-    
-    <div class="dropdown-divider my-2"></div>
-    
-    <!-- MANAJEMEN AKSES USER -->
-    <h6 class="text-muted small px-3">Manajemen Akses</h6>
-    
-    <!-- User Warga (Login dengan NIK) -->
-    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" 
-       href="{{ route('admin.users.index') }}">
-        <i class="fas fa-user-circle"></i> Warga
-        <small class="badge bg-info ms-auto">NIK Login</small>
-    </a>
-    
-    <!-- Kader Posyandu -->
-    <a class="nav-link {{ request()->routeIs('admin.kaders.*') ? 'active' : '' }}" 
-       href="{{ route('admin.kaders.index') }}">
-        <i class="fas fa-user-nurse"></i> Kader
-        <small class="badge bg-warning ms-auto">Email Login</small>
-    </a>
-    
-    <!-- Bidan -->
-    <a class="nav-link {{ request()->routeIs('admin.bidans.*') ? 'active' : '' }}" 
-       href="{{ route('admin.bidans.index') }}">
-        <i class="fas fa-user-md"></i> Bidan
-        <small class="badge bg-success ms-auto">Email Login</small>
-    </a>
-    
-    <div class="dropdown-divider my-2"></div>
-    
-    <!-- PENGATURAN SISTEM -->
-    <h6 class="text-muted small px-3">Pengaturan</h6>
-    
-    <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" 
-       href="{{ route('admin.settings.index') }}">
-        <i class="fas fa-cog"></i> Pengaturan Sistem
-    </a>
-    
-    <!-- Backup Database (opsional) -->
-    <a class="nav-link" href="#" onclick="alert('Fitur backup akan segera tersedia')">
-        <i class="fas fa-database"></i> Backup Data
-    </a>
-</nav>
+{{--
+  PATH   : resources/views/partials/sidebar/admin.blade.php
+  FUNGSI : Sidebar menu khusus role admin
+  CSS    : Menggunakan class dari layouts/app.blade.php (sb-link, sb-section, dll)
+--}}
 
-<style>
-    .text-muted.small {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-        color: rgba(255, 255, 255, 0.5) !important;
-    }
-    
-    .dropdown-divider {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        margin: 0.75rem 1rem;
-    }
-    
-    .nav-link .badge {
-        font-size: 0.6rem;
-        padding: 0.2rem 0.4rem;
-    }
-</style>
+<div class="sb-brand-area">
+    <div class="sb-brand-ic"><i class="fas fa-user-shield"></i></div>
+    <div>
+        <div class="sb-brand-name">Panel Admin</div>
+        <div class="sb-brand-sub">
+            {{ Str::limit(auth()->user()->profile?->full_name ?? auth()->user()->name, 20) }}
+        </div>
+    </div>
+</div>
+
+{{-- Dashboard --}}
+<a class="sb-link {{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}"
+   href="{{ route('admin.dashboard') }}">
+    <i class="fas fa-tachometer-alt"></i>
+    <span>Dashboard</span>
+</a>
+
+<div class="sb-divider"></div>
+<div class="sb-section">Manajemen Akun</div>
+
+<a class="sb-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+   href="{{ route('admin.users.index') }}">
+    <i class="fas fa-users"></i>
+    <span>User Warga</span>
+    <span class="sb-badge nik">NIK</span>
+</a>
+
+<a class="sb-link {{ request()->routeIs('admin.kaders.*') ? 'active' : '' }}"
+   href="{{ route('admin.kaders.index') }}">
+    <i class="fas fa-user-nurse"></i>
+    <span>Kader</span>
+    <span class="sb-badge email">Email</span>
+</a>
+
+<a class="sb-link {{ request()->routeIs('admin.bidans.*') ? 'active' : '' }}"
+   href="{{ route('admin.bidans.index') }}">
+    <i class="fas fa-user-md"></i>
+    <span>Bidan</span>
+    <span class="sb-badge email">Email</span>
+</a>
+
+<div class="sb-divider"></div>
+<div class="sb-section">Sistem</div>
+
+<a class="sb-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"
+   href="{{ route('admin.settings.index') }}">
+    <i class="fas fa-cog"></i>
+    <span>Pengaturan</span>
+</a>
+
+<div class="sb-divider"></div>
+
+<form action="{{ route('logout') }}" method="POST" style="margin: .1rem .55rem;">
+    @csrf
+    <button type="submit" class="sb-link sb-logout"
+        style="width: 100%; background: none; border: none; text-align: left; cursor: pointer; padding: .62rem 1rem;">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Keluar</span>
+    </button>
+</form>

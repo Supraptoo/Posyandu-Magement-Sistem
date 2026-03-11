@@ -1,120 +1,94 @@
 @extends('layouts.user')
 
-@section('title', 'Data Remaja')
-@section('page-title', 'Profil Kesehatan Remaja')
+@section('title', 'Kesehatan Remaja')
+
+@push('styles')
+<style>
+    .animate-slide-up { opacity: 0; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+@endpush
 
 @section('content')
-<div class="container-fluid animate-fade-in">
-    {{-- Card Data Diri --}}
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-4 text-center">
-                    <div class="position-relative d-inline-block mb-3">
-                        {{-- Icon Default --}}
-                        <div class="bg-primary bg-opacity-10 rounded-circle p-3" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                            <i class="fas fa-user-graduate text-primary fa-3x"></i>
-                        </div>
-                    </div>
-                    <h4 class="fw-bold text-dark">{{ $remaja->nama_lengkap }}</h4>
-                    <p class="text-muted mb-2">{{ $remaja->sekolah ?? 'Belum ada data sekolah' }} {{ $remaja->kelas ? '- Kelas ' . $remaja->kelas : '' }}</p>
-                    
-                    <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
-                        <span class="badge bg-light text-dark border"><i class="fas fa-id-card me-1 text-secondary"></i> {{ $remaja->nik }}</span>
-                        <span class="badge bg-light text-dark border"><i class="fas fa-venus-mars me-1 text-secondary"></i> {{ $remaja->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
-                        <span class="badge bg-light text-dark border"><i class="fas fa-birthday-cake me-1 text-secondary"></i> {{ \Carbon\Carbon::parse($remaja->tanggal_lahir)->age }} Thn</span>
-                    </div>
-                    
-                    <hr class="my-4">
-                    
-                    <div class="text-start">
-                        <small class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">Kontak Orang Tua</small>
-                        <div class="d-flex align-items-center mt-2">
-                            <div class="bg-light rounded-circle p-2 me-3">
-                                <i class="fas fa-user-friends text-secondary"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 text-dark">{{ $remaja->nama_ortu ?? '-' }}</h6>
-                                <small class="text-muted">{{ $remaja->telepon_ortu ?? '-' }}</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="animate-slide-up space-y-6 pb-6">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-black text-slate-800 font-poppins tracking-tight">Ruang Remaja</h2>
+            <p class="text-sm font-medium text-slate-500 mt-1">Pantau kesehatan fisik & mentalmu.</p>
         </div>
+        <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-500 flex items-center justify-center text-2xl shadow-sm">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+    </div>
 
-        {{-- Card Kesehatan Terakhir --}}
-        <div class="col-md-8">
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3">
-                    <div class="p-3 bg-white rounded-3 shadow-sm border-start border-4 border-danger h-100">
-                        <small class="text-muted d-block fw-bold" style="font-size: 0.75rem;">HEMOGLOBIN (HB)</small>
-                        <h4 class="mb-0 fw-bold text-dark">{{ $pemeriksaanTerakhir->hemoglobin ?? '-' }} <small class="fs-6 text-muted fw-normal">g/dL</small></h4>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="p-3 bg-white rounded-3 shadow-sm border-start border-4 border-primary h-100">
-                        <small class="text-muted d-block fw-bold" style="font-size: 0.75rem;">TEKANAN DARAH</small>
-                        <h4 class="mb-0 fw-bold text-dark">{{ $pemeriksaanTerakhir->tekanan_darah ?? '-' }} <small class="fs-6 text-muted fw-normal">mmHg</small></h4>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="p-3 bg-white rounded-3 shadow-sm border-start border-4 border-success h-100">
-                        <small class="text-muted d-block fw-bold" style="font-size: 0.75rem;">BERAT BADAN</small>
-                        <h4 class="mb-0 fw-bold text-dark">{{ $pemeriksaanTerakhir->berat_badan ?? '-' }} <small class="fs-6 text-muted fw-normal">kg</small></h4>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="p-3 bg-white rounded-3 shadow-sm border-start border-4 border-info h-100">
-                        <small class="text-muted d-block fw-bold" style="font-size: 0.75rem;">TINGGI BADAN</small>
-                        <h4 class="mb-0 fw-bold text-dark">{{ $pemeriksaanTerakhir->tinggi_badan ?? '-' }} <small class="fs-6 text-muted fw-normal">cm</small></h4>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3 border-bottom-0">
-                    <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-notes-medical text-primary me-2"></i>Riwayat Check-up Terakhir</h6>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4">Tanggal</th>
-                                    <th>Keluhan</th>
-                                    <th>Diagnosa</th>
-                                    <th>Tindakan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($riwayatPemeriksaan as $row)
-                                <tr>
-                                    <td class="ps-4 fw-medium text-dark">
-                                        {{ \Carbon\Carbon::parse($row->tanggal_periksa)->format('d M Y') }}
-                                    </td>
-                                    <td>{{ Str::limit($row->keluhan, 30) ?? '-' }}</td>
-                                    <td>
-                                        <span class="badge bg-info bg-opacity-10 text-info border border-info">
-                                            {{ $row->diagnosa ?? '-' }}
-                                        </span>
-                                    </td>
-                                    <td>{{ Str::limit($row->tindakan, 30) ?? '-' }}</td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
-                                        <i class="fas fa-clipboard-list fa-2x mb-2 opacity-25"></i>
-                                        <p class="mb-0">Belum ada riwayat pemeriksaan.</p>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[24px] p-6 text-white shadow-[0_12px_30px_rgba(99,102,241,0.3)] relative overflow-hidden">
+        <i class="fas fa-fingerprint absolute -right-4 -bottom-4 text-7xl opacity-10"></i>
+        <div class="relative z-10">
+            <h3 class="text-xl font-black font-poppins mb-1">{{ $remaja->nama_lengkap }}</h3>
+            <p class="text-indigo-100 text-xs font-medium mb-4"><i class="fas fa-id-card mr-1"></i> NIK: {{ $remaja->nik }}</p>
+            
+            <div class="flex flex-wrap gap-2">
+                <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-[11px] font-bold border border-white/20 shadow-sm"><i class="fas fa-school mr-1"></i> {{ $remaja->sekolah ?? 'Pelajar' }}</span>
+                <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-[11px] font-bold border border-white/20 shadow-sm"><i class="fas fa-birthday-cake mr-1"></i> {{ \Carbon\Carbon::parse($remaja->tanggal_lahir)->age }} Tahun</span>
             </div>
         </div>
     </div>
+
+    <div>
+        <h3 class="font-black text-slate-800 text-base mb-3 font-poppins">Pemeriksaan Fisik Terakhir</h3>
+        @if($pemeriksaanTerakhir)
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+            <div class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center">
+                <i class="fas fa-weight text-indigo-400 text-xl mb-2"></i>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Berat Badan</p>
+                <h4 class="text-xl font-black text-slate-800">{{ $pemeriksaanTerakhir->berat_badan ?? '-' }}<span class="text-xs font-bold text-slate-500 ml-1">kg</span></h4>
+            </div>
+            <div class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center">
+                <i class="fas fa-ruler-vertical text-indigo-400 text-xl mb-2"></i>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Tinggi Badan</p>
+                <h4 class="text-xl font-black text-slate-800">{{ $pemeriksaanTerakhir->tinggi_badan ?? '-' }}<span class="text-xs font-bold text-slate-500 ml-1">cm</span></h4>
+            </div>
+            <div class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center">
+                <i class="fas fa-heartbeat text-rose-400 text-xl mb-2"></i>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Tensi Darah</p>
+                <h4 class="text-lg font-black text-slate-800">{{ $pemeriksaanTerakhir->tekanan_darah ?? '-' }}</h4>
+            </div>
+            <div class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center">
+                <i class="fas fa-tint text-rose-400 text-xl mb-2"></i>
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Hemoglobin</p>
+                <h4 class="text-lg font-black text-slate-800">{{ $pemeriksaanTerakhir->hemoglobin ?? '-' }}</h4>
+            </div>
+        </div>
+        
+        @if($pemeriksaanTerakhir->diagnosa)
+        <div class="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-2xl shadow-sm">
+            <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest mb-1">Catatan Bidan</h4>
+            <p class="text-sm font-semibold text-indigo-900">{{ $pemeriksaanTerakhir->diagnosa }}</p>
+        </div>
+        @endif
+
+        @else
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center shadow-sm">
+            <p class="text-sm font-semibold text-slate-500">Belum ada riwayat pemeriksaan fisik tercatat.</p>
+        </div>
+        @endif
+    </div>
+
+    <a href="{{ route('user.konseling.index') }}" class="smooth-route block bg-white border border-slate-100 rounded-[24px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-comments-medical"></i>
+                </div>
+                <div>
+                    <h4 class="text-base font-black text-slate-800 font-poppins">Ruang Konseling</h4>
+                    <p class="text-xs font-medium text-slate-500 mt-0.5">Konsultasi pribadi dengan Bidan secara rahasia.</p>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right text-slate-300 group-hover:text-teal-500 transition-colors"></i>
+        </div>
+    </a>
+
 </div>
 @endsection

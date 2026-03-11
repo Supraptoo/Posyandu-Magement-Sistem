@@ -2,308 +2,210 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan {{ $judulJenis }} — {{ $periode->translatedFormat('F Y') }}</title>
+    <title>Laporan_Posyandu_{{ ucfirst($jenis) }}_{{ $periode->format('M_Y') }}</title>
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: 'Arial', sans-serif;
-            font-size: 11px;
-            color: #1a1a1a;
-            background: white;
-            padding: 20px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt; 
+            color: #000;
+            line-height: 1.3;
+            margin: 0;
+            padding: 0;
         }
 
-        /* ====== HEADER ====== */
-        .header {
+        /* Kop Surat */
+        .kop-surat {
             text-align: center;
-            border-bottom: 3px solid #1a56db;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-        }
-        .header h1 {
-            font-size: 16px;
-            font-weight: bold;
-            color: #1a1a1a;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
             margin-bottom: 2px;
         }
-        .header h2 {
-            font-size: 13px;
-            color: #2563eb;
-            font-weight: bold;
-            margin-bottom: 4px;
+        .kop-surat-inner {
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            margin-bottom: 15px;
         }
-        .header .meta {
-            font-size: 10px;
-            color: #666;
-        }
+        .kop-surat h1 { font-size: 14pt; text-transform: uppercase; font-weight: normal; margin: 0 0 2px 0; }
+        .kop-surat h2 { font-size: 18pt; text-transform: uppercase; font-weight: bold; margin: 0 0 4px 0; }
+        .kop-surat p { font-size: 11pt; font-style: italic; margin: 0; }
 
-        /* ====== STATS GRID ====== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .stat-box {
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 8px 10px;
+        /* Judul Laporan */
+        .judul-laporan {
             text-align: center;
+            margin-bottom: 20px;
         }
-        .stat-box .val { font-size: 18px; font-weight: bold; color: #1a56db; }
-        .stat-box .lbl { font-size: 9px; color: #666; margin-top: 2px; }
-        .stat-box.danger .val { color: #dc2626; }
-        .stat-box.success .val { color: #16a34a; }
-        .stat-box.warning .val { color: #d97706; }
+        .judul-laporan h3 { font-size: 14pt; text-decoration: underline; margin: 0 0 5px 0; text-transform: uppercase; }
+        .judul-laporan p { font-size: 11pt; font-weight: bold; margin: 0; }
 
-        /* ====== TABLE ====== */
-        table {
+        /* Tabel Ringkasan */
+        .summary-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
-        thead tr {
-            background: #1a56db;
-            color: white;
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            vertical-align: top;
+            width: 50%;
         }
-        thead th {
-            padding: 7px 8px;
-            text-align: left;
-            font-size: 10px;
+        .summary-title {
             font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 5px;
+            display: block;
         }
-        tbody tr:nth-child(even) { background: #f8fafc; }
-        tbody tr:hover { background: #eff6ff; }
-        tbody td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 10px;
-        }
-        .badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            font-weight: bold;
-        }
-        .badge-success { background: #dcfce7; color: #166534; }
-        .badge-warning { background: #fef9c3; color: #713f12; }
-        .badge-danger  { background: #fee2e2; color: #991b1b; }
-        .badge-info    { background: #dbeafe; color: #1e40af; }
 
-        /* ====== FOOTER ====== */
-        .footer {
-            margin-top: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+        /* Tabel Data Utama */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 10pt;
         }
-        .ttd-box {
+        .main-table th, .main-table td {
+            border: 1px solid #000;
+            padding: 6px 4px;
+            vertical-align: top;
+        }
+        .main-table th {
+            background-color: #e5e7eb;
             text-align: center;
-            width: 180px;
-        }
-        .ttd-box .ttd-line {
-            margin-top: 50px;
-            border-top: 1px solid #333;
-            padding-top: 4px;
-            font-size: 10px;
-        }
-        .catatan-box {
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 8px 12px;
-            width: 300px;
-            min-height: 80px;
-            font-size: 10px;
-            color: #666;
-        }
-        .catatan-box .catatan-title {
             font-weight: bold;
-            color: #333;
-            margin-bottom: 4px;
+            padding: 8px 4px;
         }
 
-        /* ====== PRINT ====== */
-        @media print {
-            body { padding: 10px; }
-            .no-print { display: none !important; }
-            @page {
-                margin: 15mm;
-                size: A4 landscape;
-            }
+        /* Tabel Tanda Tangan */
+        .footer-table {
+            width: 100%;
+            margin-top: 30px;
+            page-break-inside: avoid;
         }
-
-        /* Tombol cetak - hanya muncul di layar */
-        .print-bar {
-            background: #1a56db;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: -20px -20px 20px -20px;
-            border-radius: 0;
-        }
-        .print-bar button {
-            background: white;
-            color: #1a56db;
+        .footer-table td {
+            width: 50%;
+            text-align: center;
+            vertical-align: bottom;
             border: none;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 12px;
+            padding: 0;
         }
-        .print-bar button:hover { background: #eff6ff; }
+        
+        .ttd-box {
+            height: 80px; /* Ruang untuk tanda tangan */
+            margin: 10px 0;
+        }
+        
+        .ttd-img {
+            max-height: 75px;
+            max-width: 180px;
+        }
     </style>
 </head>
 <body>
 
-    {{-- TOOLBAR (tidak ikut cetak) --}}
-    <div class="print-bar no-print">
-        <span>📄 Laporan {{ $judulJenis }} — {{ $periode->translatedFormat('F Y') }}</span>
-        <div style="display:flex;gap:8px">
-            <button onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
-            <button onclick="window.close()" style="background:#fee2e2;color:#991b1b">✕ Tutup</button>
+    <div class="kop-surat">
+        <div class="kop-surat-inner">
+            <h1>PEMERINTAH KABUPATEN PEKALONGAN</h1>
+            <h2>POSYANDU DESA BANTAR KULON</h2>
+            <p>Jalan Raya Utama Bantar Kulon, Kecamatan Lebakbarang, Kab. Pekalongan, Jawa Tengah 51193</p>
         </div>
     </div>
 
-    {{-- HEADER LAPORAN --}}
-    <div class="header">
-        <h1>LAPORAN PEMERIKSAAN POSYANDU</h1>
-        <h2>{{ strtoupper($judulJenis) }} — BULAN {{ strtoupper($periode->translatedFormat('F Y')) }}</h2>
-        <div class="meta">
-            Dicetak: {{ now()->translatedFormat('d F Y, H:i') }} WIB &nbsp;|&nbsp;
-            Petugas: {{ auth()->user()->name }}
-        </div>
+    <div class="judul-laporan">
+        <h3>LAPORAN HASIL PEMERIKSAAN KESEHATAN WARGA</h3>
+        <p>KATEGORI: {{ strtoupper($judulJenis) }} | PERIODE: {{ strtoupper($periode->translatedFormat('F Y')) }}</p>
     </div>
 
-    {{-- STATISTIK --}}
-    <div class="stats-grid">
-        <div class="stat-box">
-            <div class="val">{{ $stats['total'] }}</div>
-            <div class="lbl">Total Pemeriksaan</div>
-        </div>
-        <div class="stat-box">
-            <div class="val">{{ $stats['balita'] }}</div>
-            <div class="lbl">Balita</div>
-        </div>
-        <div class="stat-box">
-            <div class="val">{{ $stats['remaja'] }}</div>
-            <div class="lbl">Remaja</div>
-        </div>
-        <div class="stat-box">
-            <div class="val">{{ $stats['lansia'] }}</div>
-            <div class="lbl">Lansia</div>
-        </div>
-        <div class="stat-box success">
-            <div class="val">{{ $stats['normal'] }}</div>
-            <div class="lbl">Status Normal</div>
-        </div>
-        <div class="stat-box danger">
-            <div class="val">{{ $stats['stunting'] }}</div>
-            <div class="lbl">Stunting/Gizi Buruk</div>
-        </div>
-        <div class="stat-box warning">
-            <div class="val">{{ $stats['obesitas'] }}</div>
-            <div class="lbl">Obesitas/Lebih</div>
-        </div>
-        <div class="stat-box danger">
-            <div class="val">{{ $stats['hipertensi'] }}</div>
-            <div class="lbl">Hipertensi</div>
-        </div>
-    </div>
+    <table class="summary-table">
+        <tr>
+            <td>
+                <span class="summary-title">Rekapitulasi Kunjungan</span>
+                <table width="100%" style="border: none;">
+                    <tr><td style="border: none; padding: 2px;">Total Diperiksa: {{ $stats['total'] }} Pasien</td><td style="border: none; padding: 2px;">Remaja: {{ $stats['remaja'] }} Orang</td></tr>
+                    <tr><td style="border: none; padding: 2px;">Balita: {{ $stats['balita'] }} Anak</td><td style="border: none; padding: 2px;">Lansia: {{ $stats['lansia'] }} Orang</td></tr>
+                </table>
+            </td>
+            <td>
+                <span class="summary-title">Indikator Klinis Kritis</span>
+                <table width="100%" style="border: none;">
+                    <tr><td style="border: none; padding: 2px;">Kondisi Normal: {{ $stats['normal'] }} Pasien</td><td style="border: none; padding: 2px;">Risiko Obesitas: {{ $stats['obesitas'] }} Pasien</td></tr>
+                    <tr><td style="border: none; padding: 2px;">Risiko Stunting: {{ $stats['stunting'] }} Anak</td><td style="border: none; padding: 2px;">Kasus Hipertensi: {{ $stats['hipertensi'] }} Lansia</td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
-    {{-- TABEL DATA --}}
-    <table>
+    <table class="main-table">
         <thead>
             <tr>
-                <th style="width:30px">No</th>
-                <th style="width:70px">Tanggal</th>
-                <th style="width:140px">Nama Pasien</th>
-                <th style="width:60px">Kategori</th>
-                <th style="width:80px">BB / TB</th>
-                <th style="width:60px">IMT</th>
-                <th style="width:70px">Tekanan Darah</th>
-                <th style="width:70px">Status Gizi</th>
-                <th>Diagnosa Bidan</th>
-                <th style="width:100px">Tindakan</th>
+                <th style="width: 3%;">No.</th>
+                <th style="width: 9%;">Tgl Periksa</th>
+                <th style="width: 17%;">Nama Pasien</th>
+                @if($jenis == 'semua') <th style="width: 8%;">Kategori</th> @endif
+                <th style="width: 13%;">Hasil Fisik</th>
+                <th style="width: 10%;">Status Klinis</th>
+                <th style="width: 20%;">Diagnosa Bidan</th>
+                <th style="width: 20%;">Tindakan / Resep</th>
             </tr>
         </thead>
         <tbody>
             @forelse($pemeriksaans as $i => $item)
             <tr>
-                <td>{{ $i + 1 }}</td>
-                <td>{{ $item->tanggal_periksa?->format('d/m/Y') ?? '-' }}</td>
+                <td style="text-align: center;">{{ $i + 1 }}</td>
+                <td style="text-align: center;">{{ $item->tanggal_periksa?->format('d/m/Y') }}</td>
                 <td><strong>{{ $item->nama_pasien }}</strong></td>
+                @if($jenis == 'semua') <td style="text-align: center; text-transform: capitalize;">{{ $item->kategori_pasien }}</td> @endif
                 <td>
-                    @php
-                        $kBadge = ['balita'=>'info','remaja'=>'success','lansia'=>'warning'];
-                    @endphp
-                    <span class="badge badge-{{ $kBadge[$item->kategori_pasien] ?? 'info' }}">
-                        {{ ucfirst($item->kategori_pasien) }}
-                    </span>
+                    BB: {{ $item->berat_badan ?? '-' }} kg<br>
+                    TB: {{ $item->tinggi_badan ?? '-' }} cm
+                    @if($item->tekanan_darah) <br>TD: {{ $item->tekanan_darah }} @endif
                 </td>
-                <td>{{ $item->berat_badan ?? '-' }} / {{ $item->tinggi_badan ?? '-' }}</td>
-                <td>{{ $item->imt > 0 ? $item->imt : '-' }}</td>
-                <td>{{ $item->tekanan_darah ?? '-' }}</td>
-                <td>
-                    @php
-                        $giziBadge = ['baik'=>'success','kurang'=>'warning','buruk'=>'danger','stunting'=>'danger','obesitas'=>'warning','lebih'=>'warning','risiko'=>'warning'];
-                    @endphp
-                    <span class="badge badge-{{ $giziBadge[$item->status_gizi ?? ''] ?? 'info' }}">
-                        {{ ucfirst($item->status_gizi ?? '-') }}
-                    </span>
-                </td>
+                <td style="text-align: center; text-transform: uppercase;">{{ $item->status_gizi ?? '-' }}</td>
                 <td>{{ $item->diagnosa ?? '-' }}</td>
-                <td>{{ Str::limit($item->tindakan ?? '-', 40) }}</td>
+                <td>{{ $item->tindakan ?? '-' }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="10" style="text-align:center;padding:20px;color:#666">
-                    Tidak ada data pemeriksaan yang terverifikasi untuk periode ini.
+                <td colspan="{{ $jenis == 'semua' ? '8' : '7' }}" style="text-align: center; padding: 20px; font-style: italic;">
+                    Belum ada riwayat pemeriksaan yang telah diverifikasi pada periode ini.
                 </td>
             </tr>
             @endforelse
         </tbody>
     </table>
 
-    {{-- AREA CATATAN & TTD --}}
-    <div class="footer">
-        <div class="catatan-box">
-            <div class="catatan-title">Catatan / Keterangan:</div>
-            <div style="margin-top:6px;line-height:1.8">
-                ___________________________________<br>
-                ___________________________________<br>
-                ___________________________________
-            </div>
-        </div>
-
-        <div class="ttd-box">
-            <div>Mengetahui,</div>
-            <div>Bidan Posyandu</div>
-            <div class="ttd-line">
-                ( __________________________ )
-            </div>
-        </div>
-
-        <div class="ttd-box">
-            <div>{{ $periode->translatedFormat('d F Y') }}</div>
-            <div>Petugas Kader</div>
-            <div class="ttd-line">
-                ( __________________________ )
-            </div>
-        </div>
-    </div>
-
-    {{-- Auto print jika ada ?print=1 --}}
-    <script>
-        @if(request('autoprint'))
-        window.onload = function() { window.print(); }
-        @endif
-    </script>
+    <table class="footer-table">
+        <tr>
+            <td>
+                Mengetahui,<br>
+                <strong>Kepala Desa Bantar Kulon</strong><br>
+                <div class="ttd-box">
+                    @php
+                        $kadesPath = public_path('uploads/ttd/ttd_kades.png');
+                    @endphp
+                    @if(file_exists($kadesPath))
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents($kadesPath)) }}" class="ttd-img">
+                    @endif
+                </div>
+                <span style="text-decoration: underline; font-weight: bold;">( .......................................... )</span><br>
+                NIP. ........................................
+            </td>
+            <td>
+                Kajen, {{ now()->translatedFormat('d F Y') }}<br>
+                <strong>Bidan Desa / Validator Medis</strong><br>
+                <div class="ttd-box">
+                    @php
+                        $bidanPath = public_path('uploads/ttd/ttd_bidan.png');
+                    @endphp
+                    @if(file_exists($bidanPath))
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents($bidanPath)) }}" class="ttd-img">
+                    @endif
+                </div>
+                <span style="text-decoration: underline; font-weight: bold;">( {{ Auth::user()->name ?? 'Bidan Posyandu' }} )</span><br>
+                NIP. ........................................
+            </td>
+        </tr>
+    </table>
 
 </body>
 </html>

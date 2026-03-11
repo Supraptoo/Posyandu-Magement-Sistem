@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Balita;
 use App\Models\Remaja;
 use App\Models\Lansia;
-use App\Models\Kunjungan;
+use App\Models\Pemeriksaan;
 use Illuminate\Http\Request;
 
 class RekamMedisController extends Controller
@@ -16,15 +16,12 @@ class RekamMedisController extends Controller
         $search = $request->get('search');
         $type = $request->get('type', 'balita');
         
-        $rekamMedis = collect();
-        
         switch ($type) {
             case 'balita':
                 $query = Balita::query();
                 if ($search) {
                     $query->where('nama_lengkap', 'like', "%{$search}%")
-                        ->orWhere('nik', 'like', "%{$search}%")
-                        ->orWhere('kode_balita', 'like', "%{$search}%");
+                        ->orWhere('nik', 'like', "%{$search}%");
                 }
                 $data = $query->paginate(10);
                 break;
@@ -33,8 +30,7 @@ class RekamMedisController extends Controller
                 $query = Remaja::query();
                 if ($search) {
                     $query->where('nama_lengkap', 'like', "%{$search}%")
-                        ->orWhere('nik', 'like', "%{$search}%")
-                        ->orWhere('kode_remaja', 'like', "%{$search}%");
+                        ->orWhere('nik', 'like', "%{$search}%");
                 }
                 $data = $query->paginate(10);
                 break;
@@ -43,8 +39,7 @@ class RekamMedisController extends Controller
                 $query = Lansia::query();
                 if ($search) {
                     $query->where('nama_lengkap', 'like', "%{$search}%")
-                        ->orWhere('nik', 'like', "%{$search}%")
-                        ->orWhere('kode_lansia', 'like', "%{$search}%");
+                        ->orWhere('nik', 'like', "%{$search}%");
                 }
                 $data = $query->paginate(10);
                 break;
@@ -58,13 +53,15 @@ class RekamMedisController extends Controller
 
     public function show($pasien_type, $pasien_id)
     {
+        // Mencari data identitas pasien
         $modelClass = $this->getModelClass($pasien_type);
         $pasien = $modelClass::findOrFail($pasien_id);
         
-        $kunjungans = Kunjungan::where('pasien_id', $pasien_id)
-            ->where('pasien_type', $modelClass)
-            ->with(['pemeriksaan', 'imunisasis', 'vitamins', 'konsultasi'])
-            ->latest()
+        // MENGATASI ERROR: Kita ambil riwayat dari tabel Pemeriksaan langsung
+        // Karena tabel ini sudah pasti ada dan menyimpan history pasien.
+        $kunjungans = Pemeriksaan::where('pasien_id', $pasien_id)
+            ->where('kategori_pasien', $pasien_type)
+            ->latest('tanggal_periksa')
             ->get();
             
         return view('bidan.rekam-medis.show', compact('pasien', 'kunjungans', 'pasien_type'));

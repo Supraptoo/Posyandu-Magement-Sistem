@@ -1,159 +1,189 @@
 @extends('layouts.kader')
 
 @section('title', 'Data Balita')
+@section('page-name', 'Database Balita')
+
+@push('styles')
+<style>
+    .animate-slide-up {
+        opacity: 0;
+        animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Search Input Styling (Non-Flat) */
+    .search-input {
+        width: 100%;
+        background-color: #f8fafc;
+        border: 2px solid #e2e8f0;
+        color: #0f172a;
+        font-size: 0.875rem;
+        border-radius: 1rem; /* 16px */
+        padding: 0.75rem 1rem 0.75rem 2.75rem; /* left padding for icon */
+        outline: none;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.02);
+    }
+    .search-input:focus {
+        background-color: #ffffff;
+        border-color: #6366f1;
+        box-shadow: 0 4px 12px -3px rgba(99, 102, 241, 0.15);
+    }
+    .search-input::placeholder { color: #94a3b8; font-weight: 500; }
+
+    /* Custom Scrollbar for Table */
+    .custom-scrollbar::-webkit-scrollbar { height: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+@endpush
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <div>
-        <h1 class="h3 mb-0 text-gray-800 fw-bold">Data Balita</h1>
-        <p class="text-muted mb-0">Kelola data balita di wilayah kerja Anda</p>
-    </div>
-    <a href="{{ route('kader.data.balita.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4">
-        <i class="fas fa-plus me-2"></i>Tambah Balita
-    </a>
-</div>
+<div class="max-w-7xl mx-auto animate-slide-up">
 
-<div class="row mb-4">
-    <div class="col-md-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-3">
-                <form action="{{ route('kader.data.balita.index') }}" method="GET">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" class="form-control border-0 bg-light" name="search" 
-                               placeholder="Cari nama balita, NIK, atau nama ibu..." 
-                               value="{{ request('search') }}">
-                        <button class="btn btn-primary px-4" type="submit">Cari</button>
-                        @if(request('search'))
-                        <a href="{{ route('kader.data.balita.index') }}" class="btn btn-light border ms-2" title="Reset">
-                            <i class="fas fa-sync-alt text-muted"></i>
-                        </a>
-                        @endif
-                    </div>
-                </form>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-[18px] bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl shadow-inner border border-indigo-200/50 transform -rotate-3 hover:rotate-0 transition-transform">
+                <i class="fas fa-users"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Database Balita</h1>
+                <p class="text-slate-500 mt-1 font-medium text-sm">Kelola profil balita dan integrasi akun warga.</p>
             </div>
         </div>
+        <a href="{{ route('kader.data.balita.create') }}" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 text-white font-extrabold text-sm rounded-xl hover:bg-indigo-700 shadow-[0_4px_12px_rgba(79,70,229,0.3)] hover:-translate-y-0.5 transition-all">
+            <i class="fas fa-plus"></i> Tambah Balita Baru
+        </a>
     </div>
-</div>
 
-<div class="card border-0 shadow-md">
-    <div class="card-body p-0">
-        @if($balitas->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="px-4 py-3 border-0 text-secondary small text-uppercase fw-bold">Balita</th>
-                        <th class="py-3 border-0 text-secondary small text-uppercase fw-bold">Informasi</th>
-                        <th class="py-3 border-0 text-secondary small text-uppercase fw-bold">Orang Tua</th>
-                        <th class="px-4 py-3 border-0 text-secondary small text-uppercase fw-bold text-end">Aksi</th>
+    <div class="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-4 mb-6">
+        <form action="{{ route('kader.data.balita.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-1">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" name="search" value="{{ $search }}" placeholder="Ketik nama balita, NIK, atau nama ibu..." class="search-input">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="px-6 py-3 bg-slate-800 text-white font-extrabold text-sm rounded-xl hover:bg-slate-900 shadow-sm transition-colors">
+                    Cari Data
+                </button>
+                @if($search)
+                    <a href="{{ route('kader.data.balita.index') }}" class="px-6 py-3 bg-rose-50 text-rose-600 font-extrabold text-sm rounded-xl hover:bg-rose-100 transition-colors border border-rose-100 flex items-center">
+                        Reset
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                    <tr class="bg-slate-50/80 border-b border-slate-100">
+                        <th class="px-6 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Profil Balita</th>
+                        <th class="px-6 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Usia & Tgl Lahir</th>
+                        <th class="px-6 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Data Orang Tua</th>
+                        <th class="px-6 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-center">Status Akun</th>
+                        <th class="px-6 py-5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach($balitas as $balita)
-                    <tr>
-                        <td class="px-4 py-3">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-sm bg-{{ $balita->jenis_kelamin == 'L' ? 'info' : 'danger' }}-subtle text-{{ $balita->jenis_kelamin == 'L' ? 'info' : 'danger' }} rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
-                                    <i class="fas fa-baby fs-5"></i>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($balitas as $balita)
+                    <tr class="hover:bg-slate-50/50 transition-colors group">
+                        
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg shadow-sm border border-white {{ $balita->jenis_kelamin == 'L' ? 'bg-sky-100 text-sky-600' : 'bg-rose-100 text-rose-600' }}">
+                                    {{ strtoupper(substr($balita->nama_lengkap, 0, 1)) }}
                                 </div>
                                 <div>
-                                    <div class="fw-bold text-dark">{{ $balita->nama_lengkap }}</div>
-                                    <div class="small text-muted">NIK: {{ $balita->nik }}</div>
+                                    <p class="font-extrabold text-slate-800 text-sm mb-0.5">{{ $balita->nama_lengkap }}</p>
+                                    <p class="text-[11px] font-bold text-slate-400 flex items-center gap-1.5">
+                                        <i class="fas fa-barcode"></i> {{ $balita->kode_balita }}
+                                    </p>
                                 </div>
                             </div>
                         </td>
-                        <td class="py-3">
-                            <div class="d-flex flex-column gap-1">
-                                <span class="badge bg-light text-dark border fw-normal" style="width: fit-content;">
-                                    <i class="fas fa-birthday-cake me-1 text-warning"></i> 
-                                    @php
-                                        $usia_bulan = $balita->tanggal_lahir->diffInMonths(now());
-                                        $usia_tahun = floor($usia_bulan / 12);
-                                        $sisa_bulan = $usia_bulan % 12;
-                                    @endphp
-                                    {{ $usia_tahun > 0 ? $usia_tahun . ' Th ' : '' }}{{ $sisa_bulan }} Bln
-                                </span>
-                                <small class="text-muted">{{ $balita->tanggal_lahir->format('d M Y') }}</small>
+
+                        <td class="px-6 py-4">
+                            @php
+                                $diff = \Carbon\Carbon::parse($balita->tanggal_lahir)->diff(\Carbon\Carbon::now());
+                                $usia = $diff->y > 0 ? $diff->y . ' Thn ' . $diff->m . ' Bln' : $diff->m . ' Bln';
+                            @endphp
+                            <div class="inline-block px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg mb-1 border border-slate-200">
+                                {{ $usia }}
                             </div>
+                            <p class="text-[11px] font-bold text-slate-400 pl-1">{{ \Carbon\Carbon::parse($balita->tanggal_lahir)->format('d M Y') }}</p>
                         </td>
-                        <td class="py-3">
-                            <div class="small text-muted mb-1">Ibu: <span class="fw-bold text-dark">{{ $balita->nama_ibu }}</span></div>
-                            <div class="small text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ Str::limit($balita->alamat, 20) }}</div>
+
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-slate-800 text-sm mb-0.5 flex items-center gap-2">
+                                <i class="fas fa-female text-rose-400"></i> {{ $balita->nama_ibu }}
+                            </p>
+                            <p class="text-[11px] font-bold text-slate-400 pl-5">NIK: {{ $balita->nik_ibu }}</p>
                         </td>
-                        <td class="px-4 py-3 text-end">
-                            <div class="dropdown">
-                                <button class="btn btn-light btn-sm rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-ellipsis-v text-muted"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg">
-                                    <li><a class="dropdown-item" href="{{ route('kader.data.balita.show', $balita->id) }}"><i class="fas fa-eye me-2 text-info"></i>Detail</a></li>
-                                    <li><a class="dropdown-item" href="{{ route('kader.data.balita.edit', $balita->id) }}"><i class="fas fa-edit me-2 text-warning"></i>Edit</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <button type="button" class="dropdown-item text-danger btn-delete" data-id="{{ $balita->id }}">
-                                            <i class="fas fa-trash me-2"></i>Hapus
-                                        </button>
-                                    </li>
-                                </ul>
+
+                        <td class="px-6 py-4 text-center">
+                            @if($balita->user_id)
+                                <div class="inline-flex flex-col items-center justify-center">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-extrabold border border-emerald-200">
+                                        <i class="fas fa-check-circle text-emerald-500"></i> Terhubung
+                                    </span>
+                                </div>
+                            @else
+                                <div class="inline-flex flex-col items-center justify-center" title="Belum ada akun warga dengan NIK Ibu tersebut">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-extrabold border border-amber-200">
+                                        <i class="fas fa-exclamation-circle text-amber-500"></i> Belum
+                                    </span>
+                                </div>
+                            @endif
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                <a href="{{ route('kader.data.balita.show', $balita->id) }}" class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50 shadow-sm transition-all" title="Detail Profil">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ route('kader.data.balita.edit', $balita->id) }}" class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-amber-600 hover:border-amber-300 hover:bg-amber-50 shadow-sm transition-all" title="Edit Data">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('kader.data.balita.destroy', $balita->id) }}" method="POST" onsubmit="return confirm('Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin ingin menghapus data balita ini?');" class="inline-block">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50 shadow-sm transition-all" title="Hapus Data">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-16 text-center">
+                            <div class="w-20 h-20 bg-slate-50 rounded-[20px] flex items-center justify-center text-slate-300 mx-auto mb-4 text-3xl shadow-inner border border-slate-100">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <h3 class="font-black text-slate-800 text-lg">Belum Ada Data Balita</h3>
+                            <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">Anda belum menambahkan data balita atau tidak ada data yang cocok dengan pencarian Anda.</p>
+                            <a href="{{ route('kader.data.balita.create') }}" class="inline-flex items-center gap-2 mt-4 text-indigo-600 font-bold hover:text-indigo-700">
+                                <i class="fas fa-plus"></i> Tambah Data Sekarang
+                            </a>
+                        </td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="px-4 py-3 border-top">
+        
+        @if($balitas->hasPages())
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
             {{ $balitas->links() }}
-        </div>
-        @else
-        <div class="text-center py-5">
-            <div class="mb-3">
-                <i class="fas fa-baby-carriage fa-3x text-muted opacity-25"></i>
-            </div>
-            <h5 class="text-muted">Tidak ada data balita ditemukan</h5>
-            <p class="text-muted small">Coba kata kunci lain atau tambahkan data baru</p>
         </div>
         @endif
     </div>
 </div>
-
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-body p-4 text-center">
-                <div class="mb-3">
-                    <div class="avatar-lg bg-danger-subtle text-danger rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <i class="fas fa-trash-alt fs-3"></i>
-                    </div>
-                </div>
-                <h5 class="fw-bold mb-2">Hapus Data Balita?</h5>
-                <p class="text-muted mb-4">Data yang dihapus tidak dapat dikembalikan. Riwayat pemeriksaan terkait juga akan terhapus.</p>
-                <form id="deleteForm" method="POST" class="d-flex justify-content-center gap-2">
-                    @csrf
-                    @method('DELETE')
-                    <button type="button" class="btn btn-light px-4 rounded-pill" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger px-4 rounded-pill">Ya, Hapus</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteButtons = document.querySelectorAll('.btn-delete');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const form = document.getElementById('deleteForm');
-            form.action = `{{ url('kader/data/balita') }}/${id}`;
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
-        });
-    });
-});
-</script>
-@endpush
 @endsection

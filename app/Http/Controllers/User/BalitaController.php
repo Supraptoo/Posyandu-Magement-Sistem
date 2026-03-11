@@ -4,83 +4,138 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Balita;
-use App\Models\Kunjungan;
+use App\Models\Pemeriksaan;
 use App\Models\Imunisasi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class BalitaController extends Controller
 {
     public function index()
     {
         $user = auth()->user();
-        $nikUser = $this->getNikUser($user);
-        
-        // Cari balita berdasarkan NIK Ibu/Ayah
-        $anak = Balita::where(function($q) use ($nikUser) {
-                $q->where('nik_ibu', $nikUser)
-                  ->orWhere('nik_ayah', $nikUser);
+        $nik  = $this->detectNik($user);
+
+        $dataBalita = Balita::where(function ($q) use ($nik, $user) {
+                if ($nik) {
+                    $q->where('nik_ibu', $nik)
+                      ->orWhere('nik_ayah', $nik)
+                      ->orWhere('nik', $nik);
+                }
+                $q->orWhere('user_id', $user->id);
             })
-            ->with(['pemeriksaan_terakhir'])
+            ->orderBy('tanggal_lahir', 'desc')
             ->get();
-            
-        return view('user.balita.index', ['dataBalita' => $anak]);
+
+        // Untuk setiap balita, ambil riwayat pemeriksaan + imunisasi sekaligus
+        $dataBalita = $dataBalita->map(function ($balita) {
+            $tgl   = Carbon::parse($balita->tanggal_lahir);
+            $diff  = $tgl->diff(now());
+
+            $balita->usia_tahun = $diff->y;
+            $balita->usia_bulan = $diff->m;
+            $balita->usia_hari  = $diff->d;
+
+            $balita->riwayatPemeriksaan = Pemeriksaan::where('pasien_id', $balita->id)
+                ->where('kategori_pasien', 'balita')
+                ->orderBy('tanggal_periksa', 'desc')
+                ->get();
+
+            $balita->riwayatImunisasi = Imunisasi::whereHas('kunjungan', function ($q) use ($balita) {
+                    $q->where('pasien_id', $balita->id)
+                      ->where('pasien_type', 'App\Models\Balita');
+                })
+                ->orderBy('tanggal_imunisasi', 'desc')
+                ->get();
+
+            return $balita;
+        });
+
+        if ($dataBalita->isEmpty()) {
+            return view('user.balita.index', [
+                'dataBalita' => $dataBalita,
+                'pesan'      => empty($nik)
+                    ? 'NIK tidak ditemukan di profil Anda. Silakan lengkapi profil atau hubungi kader.'
+                    : 'Belum ada data balita untuk NIK ' . $nik . '. Hubungi kader untuk verifikasi.',
+            ]);
+        }
+
+        return view('user.balita.index', compact('dataBalita'));
     }
 
     public function show($id)
     {
         $user = auth()->user();
-        $nikUser = $this->getNikUser($user);
+        $nik  = $this->detectNik($user);
 
-        $balita = Balita::where(function($q) use ($nikUser) {
-                $q->where('nik_ibu', $nikUser)
-                  ->orWhere('nik_ayah', $nikUser);
+        $balita = Balita::where(function ($q) use ($nik, $user) {
+                if ($nik) {
+                    $q->where('nik_ibu', $nik)
+                      ->orWhere('nik_ayah', $nik)
+                      ->orWhere('nik', $nik);
+                }
+                $q->orWhere('user_id', $user->id);
             })
-            ->findOrFail($id);
-            
-        // FIXED: Tambahkan 'kunjungans.' didepan pasien_id untuk mencegah Ambigu
-        $riwayatPemeriksaan = Kunjungan::where('kunjungans.pasien_id', $id)
-            ->where('kunjungans.pasien_type', 'App\Models\Balita')
-            ->where('kunjungans.jenis_kunjungan', 'pemeriksaan')
-            ->join('pemeriksaans', 'kunjungans.id', '=', 'pemeriksaans.kunjungan_id')
-            ->select('kunjungans.*', 'pemeriksaans.*', 'kunjungans.created_at as tgl_kunjungan')
-            ->orderBy('kunjungans.tanggal_kunjungan', 'desc')
+            ->where('id', $id)
+            ->first();
+
+        if (!$balita) {
+            return redirect()->route('user.balita.index')
+                ->with('error', 'Data balita tidak ditemukan atau bukan milik Anda.');
+        }
+
+        $riwayatPemeriksaan = Pemeriksaan::where('pasien_id', $balita->id)
+            ->where('kategori_pasien', 'balita')
+            ->orderBy('tanggal_periksa', 'desc')
             ->get();
-            
-        $riwayatImunisasi = Imunisasi::whereHas('kunjungan', function($query) use ($id) {
-                $query->where('pasien_id', $id)
-                    ->where('pasien_type', 'App\Models\Balita');
+
+        $riwayatImunisasi = Imunisasi::whereHas('kunjungan', function ($q) use ($balita) {
+                $q->where('pasien_id', $balita->id)
+                  ->where('pasien_type', 'App\Models\Balita');
             })
-            ->latest()
-            ->get();
-            
-        return view('user.balita.show', compact('balita', 'riwayatPemeriksaan', 'riwayatImunisasi'));
-    }
-
-    // FIXED: Method Imunisasi
-    public function imunisasi()
-    {
-        $user = auth()->user();
-        $nikUser = $this->getNikUser($user);
-
-        // Ambil semua ID anak milik user ini
-        $balitaIds = Balita::where('nik_ibu', $nikUser)
-            ->orWhere('nik_ayah', $nikUser)
-            ->pluck('id');
-
-        $riwayatImunisasi = Imunisasi::whereHas('kunjungan', function($query) use ($balitaIds) {
-                $query->whereIn('pasien_id', $balitaIds)
-                    ->where('pasien_type', 'App\Models\Balita');
-            })
-            ->with('kunjungan') // Load relasi kunjungan
             ->orderBy('tanggal_imunisasi', 'desc')
             ->get();
 
-        // Pastikan view ini ada (Langkah 2)
+        $diff       = Carbon::parse($balita->tanggal_lahir)->diff(now());
+        $usia_tahun = $diff->y;
+        $usia_bulan = $diff->m;
+        $usia_hari  = $diff->d;
+
+        return view('user.balita.show', compact(
+            'balita', 'riwayatPemeriksaan', 'riwayatImunisasi',
+            'usia_tahun', 'usia_bulan', 'usia_hari'
+        ));
+    }
+
+    public function imunisasi()
+    {
+        $user = auth()->user();
+        $nik  = $this->detectNik($user);
+
+        $balitaIds = Balita::where(function ($q) use ($nik, $user) {
+                if ($nik) {
+                    $q->where('nik_ibu', $nik)
+                      ->orWhere('nik_ayah', $nik)
+                      ->orWhere('nik', $nik);
+                }
+                $q->orWhere('user_id', $user->id);
+            })
+            ->pluck('id');
+
+        $riwayatImunisasi = Imunisasi::whereHas('kunjungan', function ($q) use ($balitaIds) {
+                $q->whereIn('pasien_id', $balitaIds)
+                  ->where('pasien_type', 'App\Models\Balita');
+            })
+            ->with(['kunjungan.pasien'])
+            ->orderBy('tanggal_imunisasi', 'desc')
+            ->get();
+
         return view('user.balita.imunisasi', compact('riwayatImunisasi'));
     }
 
-    // Helper NIK
-    private function getNikUser($user) {
+    private function detectNik($user)
+    {
         if (!empty($user->nik)) return $user->nik;
         if ($user->profile && !empty($user->profile->nik)) return $user->profile->nik;
         if (!empty($user->username) && is_numeric($user->username)) return $user->username;

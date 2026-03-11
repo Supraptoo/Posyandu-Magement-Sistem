@@ -14,6 +14,17 @@ class CheckUserStatus
             $user = Auth::user();
 
             if ($user->status !== 'active') {
+
+                // ✅ FIX: Jika request AJAX (polling notifikasi dll),
+                // jangan redirect — return JSON 401
+                // Redirect dari AJAX = loop tak berenti
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'status'  => 'inactive',
+                        'message' => 'Akun tidak aktif.'
+                    ], 401);
+                }
+
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();

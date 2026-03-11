@@ -9,11 +9,12 @@ use App\Models\Pemeriksaan;
 use App\Models\Balita;
 use App\Models\Remaja;
 use App\Models\Lansia;
+use Barryvdh\DomPDF\Facade\Pdf; // TAMBAHAN WAJIB
 
 class LaporanController extends Controller
 {
     /**
-     * Halaman utama laporan — satu halaman, pilih bulan/tahun/jenis
+     * Halaman utama laporan
      */
     public function index(Request $request)
     {
@@ -23,7 +24,6 @@ class LaporanController extends Controller
 
         $periode = Carbon::create($tahun, $bulan, 1);
 
-        // Data ringkasan untuk preview
         $query = Pemeriksaan::with(['balita', 'remaja', 'lansia'])
             ->whereMonth('tanggal_periksa', $bulan)
             ->whereYear('tanggal_periksa', $tahun);
@@ -53,8 +53,7 @@ class LaporanController extends Controller
     }
 
     /**
-     * Generate laporan — tampil di browser sebagai halaman print
-     * TIDAK menyimpan file ke server
+     * Generate & Download PDF Otomatis menggunakan DomPDF
      */
     public function cetak(Request $request)
     {
@@ -67,7 +66,7 @@ class LaporanController extends Controller
         $query = Pemeriksaan::with(['balita', 'remaja', 'lansia', 'pemeriksa', 'verifikator'])
             ->whereMonth('tanggal_periksa', $bulan)
             ->whereYear('tanggal_periksa', $tahun)
-            ->where('status_verifikasi', 'verified') // Hanya data yang sudah diverifikasi
+            ->where('status_verifikasi', 'verified')
             ->latest('tanggal_periksa');
 
         if ($jenis !== 'semua') {
@@ -76,7 +75,6 @@ class LaporanController extends Controller
 
         $pemeriksaans = $query->get();
 
-        // Statistik untuk header laporan
         $stats = [
             'total'      => $pemeriksaans->count(),
             'balita'     => $pemeriksaans->where('kategori_pasien', 'balita')->count(),
@@ -98,9 +96,15 @@ class LaporanController extends Controller
             default  => 'Semua Kategori',
         };
 
-        // Return view print — user tinggal Ctrl+P untuk simpan PDF
-        return view('bidan.laporan.cetak', compact(
+        // 1. Eksekusi file cetak.blade.php menjadi format PDF
+        $pdf = Pdf::loadView('bidan.laporan.cetak', compact(
             'pemeriksaans', 'stats', 'periode', 'jenis', 'judulJenis', 'bulan', 'tahun'
-        ));
+        ))->setPaper('a4', 'landscape'); // Format Kertas A4 Memanjang
+
+        // 2. Penamaan file saat diunduh
+        $namaFile = 'Laporan_Posyandu_' . str_replace(' ', '_', $judulJenis) . '_' . $periode->format('M_Y') . '.pdf';
+
+        // 3. Paksa Download Langsung
+        return $pdf->download($namaFile);
     }
 }

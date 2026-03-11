@@ -1,304 +1,112 @@
 @extends('layouts.kader')
 
 @section('title', 'Detail Jadwal')
+@section('page-name', 'Detail Jadwal Acara')
+
+@push('styles')
+<style>
+    .animate-slide-up { opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+@endpush
 
 @section('content')
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-calendar me-2"></i>Detail Jadwal
-        </h1>
-        <div>
-            <a href="{{ route('kader.jadwal.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Kembali
+<div class="max-w-4xl mx-auto animate-slide-up">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('kader.jadwal.index') }}" class="w-10 h-10 bg-white border border-slate-200 text-slate-500 rounded-xl flex items-center justify-center hover:bg-slate-50 transition-colors shadow-sm">
+                <i class="fas fa-arrow-left"></i>
             </a>
-            <a href="{{ route('kader.jadwal.edit', $jadwal->id) }}" class="btn btn-warning">
-                <i class="fas fa-edit me-2"></i>Edit
-            </a>
-            @if($jadwal->status == 'aktif')
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#broadcastModal">
-                <i class="fas fa-bullhorn me-2"></i>Broadcast
-            </button>
-            @endif
-        </div>
-    </div>
-
-    <!-- Jadwal Detail -->
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Main Info Card -->
-            <div class="card shadow mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-info-circle me-2"></i>Informasi Jadwal
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <h3 class="card-title">{{ $jadwal->judul }}</h3>
-                    <p class="card-text">{{ $jadwal->deskripsi }}</p>
-                    
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <strong><i class="fas fa-calendar-alt me-2 text-muted"></i>Tanggal:</strong><br>
-                                <span class="fs-5">{{ $jadwal->tanggal ? \Carbon\Carbon::parse($jadwal->tanggal)->format('d F Y') : '-' }}</span>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong><i class="fas fa-clock me-2 text-muted"></i>Waktu:</strong><br>
-                                <span class="fs-5">{{ $jadwal->waktu_mulai }} - {{ $jadwal->waktu_selesai }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <strong><i class="fas fa-map-marker-alt me-2 text-muted"></i>Lokasi:</strong><br>
-                                <span class="fs-5">{{ $jadwal->lokasi }}</span>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong><i class="fas fa-tag me-2 text-muted"></i>Status:</strong><br>
-                                @if($jadwal->status == 'aktif')
-                                <span class="badge bg-success fs-6">Aktif</span>
-                                @elseif($jadwal->status == 'selesai')
-                                <span class="badge bg-secondary fs-6">Selesai</span>
-                                @else
-                                <span class="badge bg-danger fs-6">Dibatalkan</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <strong><i class="fas fa-filter me-2 text-muted"></i>Kategori:</strong><br>
-                                <span class="badge bg-{{ $jadwal->kategori == 'imunisasi' ? 'success' : ($jadwal->kategori == 'pemeriksaan' ? 'primary' : 'warning') }} fs-6">
-                                    {{ ucfirst($jadwal->kategori) }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <strong><i class="fas fa-users me-2 text-muted"></i>Target Peserta:</strong><br>
-                                @if($jadwal->target_peserta == 'semua')
-                                <span class="badge bg-info fs-6">Semua</span>
-                                @elseif($jadwal->target_peserta == 'balita')
-                                <span class="badge bg-danger fs-6">Balita</span>
-                                @elseif($jadwal->target_peserta == 'remaja')
-                                <span class="badge bg-secondary fs-6">Remaja</span>
-                                @elseif($jadwal->target_peserta == 'lansia')
-                                <span class="badge bg-dark fs-6">Lansia</span>
-                                @else
-                                <span class="badge bg-warning fs-6">Ibu Hamil</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Detail Acara</h1>
         </div>
         
-        <div class="col-lg-4">
-            <!-- Side Cards -->
-            <div class="card shadow mb-4">
-                <div class="card-header bg-info text-white">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-user-plus me-2"></i>Dibuat Oleh
-                    </h6>
-                </div>
-                <div class="card-body text-center">
-                    <div class="avatar-circle bg-info text-white rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" 
-                         style="width: 80px; height: 80px; font-size: 2rem;">
-                        <i class="fas fa-user"></i>
+        <a href="{{ route('kader.jadwal.edit', $jadwal->id) }}" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-500 text-white font-extrabold text-sm rounded-xl hover:bg-amber-600 shadow-sm transition-all hover:-translate-y-0.5">
+            <i class="fas fa-edit"></i> Edit Jadwal
+        </a>
+    </div>
+
+    <div class="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        
+        <div class="bg-gradient-to-br from-violet-600 to-indigo-800 p-8 sm:p-12 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3"></div>
+            <div class="absolute bottom-0 left-0 w-40 h-40 bg-black/20 rounded-full blur-2xl transform -translate-x-1/2 translate-y-1/2"></div>
+            <i class="fas fa-bullhorn absolute right-8 bottom-8 text-white/5 text-8xl transform -rotate-12"></i>
+
+            <div class="relative z-10 flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
+                
+                <div class="w-28 bg-white rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <div class="bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest py-2 text-center">
+                        {{ \Carbon\Carbon::parse($jadwal->tanggal)->format('F Y') }}
                     </div>
-                    <h5 class="font-weight-bold">{{ $jadwal->creator->profile->full_name ?? 'Sistem' }}</h5>
-                    <p class="text-muted">Kader Posyandu</p>
-                    
-                    <div class="mt-3">
-                        <small class="text-muted">
-                            <i class="fas fa-calendar me-1"></i>Dibuat: {{ optional($jadwal->created_at)->format('d/m/Y H:i') ?? '-' }}
-                        </small><br>
-                        <small class="text-muted">
-                            <i class="fas fa-sync me-1"></i>Diperbarui: {{ optional($jadwal->updated_at)->format('d/m/Y H:i') ?? '-' }}
-                        </small>
+                    <div class="py-4 text-center">
+                        <span class="block text-4xl font-black text-slate-800 leading-none">{{ \Carbon\Carbon::parse($jadwal->tanggal)->format('d') }}</span>
+                        <span class="block text-xs font-bold text-slate-500 mt-1">{{ \Carbon\Carbon::parse($jadwal->tanggal)->format('l') }}</span>
                     </div>
                 </div>
+
+                <div class="flex-1 mt-2">
+                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase rounded-lg tracking-widest mb-3 border border-white/30">
+                        {{ str_replace('_', ' ', $jadwal->target_peserta) }}
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-black text-white leading-tight mb-2">{{ $jadwal->judul }}</h2>
+                    <p class="text-violet-100 font-medium flex items-center justify-center sm:justify-start gap-2">
+                        <i class="fas fa-map-marker-alt text-rose-300"></i> {{ $jadwal->lokasi }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Jam Pelaksanaan</p>
+                        <p class="text-sm font-bold text-slate-800">{{ \Carbon\Carbon::parse($jadwal->waktu_mulai)->format('H:i') }} s/d {{ \Carbon\Carbon::parse($jadwal->waktu_selesai)->format('H:i') }} WIB</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center text-lg shrink-0"><i class="fas fa-tags"></i></div>
+                    <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Kategori Acara</p>
+                        <p class="text-sm font-bold text-slate-800 capitalize">{{ $jadwal->kategori }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-lg shrink-0"><i class="fas fa-info-circle"></i></div>
+                    <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                        @if($jadwal->status == 'aktif') <p class="text-sm font-bold text-violet-600">Akan Datang</p>
+                        @elseif($jadwal->status == 'selesai') <p class="text-sm font-bold text-emerald-600">Selesai</p>
+                        @else <p class="text-sm font-bold text-rose-600">Dibatalkan</p> @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Deskripsi & Catatan</p>
+                <p class="text-sm font-medium text-slate-700 leading-relaxed">{{ $jadwal->deskripsi ?? 'Tidak ada catatan tambahan untuk kegiatan ini.' }}</p>
             </div>
             
-            <!-- Quick Actions -->
-            <div class="card shadow">
-                <div class="card-header bg-warning text-white">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-bolt me-2"></i>Aksi Cepat
-                    </h6>
+            @if($jadwal->status == 'aktif')
+            <div class="mt-8 border-t border-slate-100 pt-8 text-center">
+                <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-bounce">
+                    <i class="fas fa-bell"></i>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        @if($jadwal->status == 'aktif')
-                        <a href="{{ route('kader.jadwal.edit', $jadwal->id) }}" class="btn btn-warning">
-                            <i class="fas fa-edit me-2"></i>Edit Jadwal
-                        </a>
-                        
-                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#broadcastModal">
-                            <i class="fas fa-bullhorn me-2"></i>Broadcast Notifikasi
-                        </button>
-                        
-                        <!-- Modal Broadcast -->
-                        <div class="modal fade" id="broadcastModal" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Broadcast Jadwal</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Kirim notifikasi jadwal ini ke semua user?</p>
-                                        <div class="alert alert-info">
-                                            <strong>{{ $jadwal->judul }}</strong><br>
-                                            {{ $jadwal->deskripsi }}<br>
-                                            <strong>Tanggal:</strong> {{ \Carbon\Carbon::parse($jadwal->tanggal)->format('d/m/Y') }}<br>
-                                            <strong>Waktu:</strong> {{ $jadwal->waktu_mulai }} - {{ $jadwal->waktu_selesai }}<br>
-                                            <strong>Lokasi:</strong> {{ $jadwal->lokasi }}
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                        <form action="{{ route('kader.jadwal.broadcast', $jadwal->id) }}" method="POST">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success">
-                                                <i class="fas fa-bullhorn me-2"></i>Ya, Broadcast
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-                        
-                        <a href="{{ route('kader.jadwal.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-list me-2"></i>Lihat Semua Jadwal
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Countdown (if upcoming) -->
-    @if($jadwal->status == 'aktif' && \Carbon\Carbon::parse($jadwal->tanggal)->isFuture())
-    <div class="card shadow mt-4">
-        <div class="card-header bg-success text-white">
-            <h6 class="m-0 font-weight-bold">
-                <i class="fas fa-hourglass-half me-2"></i>Menuju Jadwal
-            </h6>
-        </div>
-        <div class="card-body">
-            <div class="row text-center">
-                @php
-                    $now = now();
-                    $jadwalDate = \Carbon\Carbon::parse($jadwal->tanggal);
-                    $diff = $now->diff($jadwalDate);
-                @endphp
+                <h4 class="text-lg font-extrabold text-slate-800 mb-2">Kirim Pengumuman ke Warga?</h4>
+                <p class="text-sm text-slate-500 max-w-md mx-auto mb-6">Fitur ini akan mengirimkan notifikasi ke aplikasi warga yang terdaftar sesuai dengan Target Peserta.</p>
                 
-                <div class="col-md-3">
-                    <div class="countdown-box">
-                        <h2 class="font-weight-bold text-success">{{ $diff->days }}</h2>
-                        <p class="text-muted">Hari</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="countdown-box">
-                        <h2 class="font-weight-bold text-success">{{ $diff->h }}</h2>
-                        <p class="text-muted">Jam</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="countdown-box">
-                        <h2 class="font-weight-bold text-success">{{ $diff->i }}</h2>
-                        <p class="text-muted">Menit</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="countdown-box">
-                        <h2 class="font-weight-bold text-success">{{ $diff->s }}</h2>
-                        <p class="text-muted">Detik</p>
-                    </div>
-                </div>
+                <form action="{{ route('kader.jadwal.broadcast', $jadwal->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-blue-600 text-white font-extrabold text-sm rounded-xl hover:bg-blue-700 shadow-[0_4px_12px_rgba(37,99,235,0.3)] hover:-translate-y-0.5 transition-all w-full sm:w-auto" onclick="return confirm('Kirim notifikasi ke seluruh warga yang masuk target peserta acara ini?');">
+                        <i class="fas fa-paper-plane"></i> Ya, Broadcast Notifikasi Sekarang
+                    </button>
+                </form>
             </div>
+            @endif
+
         </div>
     </div>
-    @endif
 </div>
-
-<style>
-.avatar-circle {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-}
-
-.countdown-box {
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    margin: 5px;
-}
-
-.countdown-box h2 {
-    margin-bottom: 5px;
-}
-
-.countdown-box p {
-    margin-bottom: 0;
-}
-
-.card-header {
-    border-bottom: none;
-}
-</style>
-
-@push('scripts')
-@if($jadwal->status == 'aktif' && \Carbon\Carbon::parse($jadwal->tanggal)->isFuture())
-<script>
-// Countdown timer
-function updateCountdown() {
-    const jadwalDate = new Date("{{ $jadwal->tanggal }}").getTime();
-    const now = new Date().getTime();
-    const distance = jadwalDate - now;
-    
-    if (distance < 0) {
-        clearInterval(countdownInterval);
-        return;
-    }
-    
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-    
-    // Update elements if they exist
-    const daysEl = document.querySelector('.countdown-box:nth-child(1) h2');
-    const hoursEl = document.querySelector('.countdown-box:nth-child(2) h2');
-    const minutesEl = document.querySelector('.countdown-box:nth-child(3) h2');
-    const secondsEl = document.querySelector('.countdown-box:nth-child(4) h2');
-    
-    if (daysEl) daysEl.textContent = days;
-    if (hoursEl) hoursEl.textContent = hours;
-    if (minutesEl) minutesEl.textContent = minutes;
-    if (secondsEl) secondsEl.textContent = seconds;
-}
-
-// Update every second
-const countdownInterval = setInterval(updateCountdown, 1000);
-updateCountdown(); // Initial call
-</script>
-@endif
-@endpush
 @endsection

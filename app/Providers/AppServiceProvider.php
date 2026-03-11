@@ -26,34 +26,52 @@ class AppServiceProvider extends ServiceProvider
             });
             $view->with('settings', $settings);
 
-            // B. Logika Sidebar & Dashboard Eksklusif
-            $peranUser = ['umum']; 
+            // B. Peran User untuk Sidebar
+            $peranUser = ['umum'];
 
             if (Auth::check() && Auth::user()->role === 'user') {
-                $user = Auth::user();
-                $nikUser = $user->nik ?? ($user->profile->nik ?? null);
+                $user    = Auth::user();
 
-                if ($nikUser) {
-                    $peranDitemukan = [];
+                // Deteksi NIK: kolom nik → profile->nik → username numerik
+                $nikUser = $user->nik ?? ($user->profile?->nik ?? null);
+                if (empty($nikUser) && !empty($user->username) && is_numeric($user->username)) {
+                    $nikUser = $user->username;
+                }
 
-                    // Cek Prioritas: Lansia -> Remaja -> Orang Tua
-                    if (Lansia::where('nik', $nikUser)->exists()) {
-                        $peranDitemukan[] = 'lansia';
-                    } 
-                    
-                    if (Remaja::where('nik', $nikUser)->exists()) {
-                        $peranDitemukan[] = 'remaja';
-                    }
+                $peranDitemukan = [];
 
-                    if (Balita::where('nik_ibu', $nikUser)->orWhere('nik_ayah', $nikUser)->exists()) {
+                try {
+                    // ✅ FIX: cek nik_ibu/nik_ayah DAN kolom nik balita DAN user_id
+                    $adaBalita = Balita::where(function ($q) use ($nikUser) {
+                            $q->where('nik_ibu', $nikUser)
+                              ->orWhere('nik_ayah', $nikUser)
+                              ->orWhere('nik', $nikUser);   // ← NIK balita itu sendiri
+                        })
+                        ->orWhere('user_id', $user->id)     // ← linked via user_id
+                        ->exists();
+
+                    if ($adaBalita) {
                         $peranDitemukan[] = 'orang_tua';
                     }
+                } catch (\Exception $e) {}
 
-                    if (!empty($peranDitemukan)) {
-                        $peranUser = $peranDitemukan;
+                try {
+                    if ($nikUser && Remaja::where('nik', $nikUser)->exists()) {
+                        $peranDitemukan[] = 'remaja';
                     }
+                } catch (\Exception $e) {}
+
+                try {
+                    if ($nikUser && Lansia::where('nik', $nikUser)->exists()) {
+                        $peranDitemukan[] = 'lansia';
+                    }
+                } catch (\Exception $e) {}
+
+                if (!empty($peranDitemukan)) {
+                    $peranUser = $peranDitemukan;
                 }
             }
+
             $view->with('peranUser', $peranUser);
         });
     }

@@ -1,126 +1,103 @@
 @extends('layouts.user')
 
 @section('title', 'Jadwal Posyandu')
-@section('page-title', 'Kalender Kegiatan')
+
+@push('styles')
+<style>
+    .animate-slide-up { opacity: 0; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .date-badge { background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); }
+</style>
+@endpush
 
 @section('content')
-<div class="container-fluid animate-fade-in">
-    {{-- Header Section --}}
-    <div class="d-flex align-items-center mb-4">
-        <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
-            <i class="far fa-calendar-check text-success fa-2x"></i>
-        </div>
+<div class="animate-slide-up space-y-6 pb-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h5 class="fw-bold mb-0">Jadwal Kegiatan</h5>
-            <small class="text-muted">Agenda kegiatan posyandu mendatang</small>
+            <h2 class="text-2xl font-black text-slate-800 font-poppins tracking-tight">Agenda Posyandu</h2>
+            <p class="text-sm font-medium text-slate-500 mt-1">Jangan lewatkan jadwal pemeriksaan kesehatan Anda.</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center text-2xl shadow-sm">
+            <i class="fas fa-calendar-alt"></i>
         </div>
     </div>
 
-    {{-- Grid Jadwal --}}
-    <div class="row g-4">
+    <div class="overflow-x-auto pb-2 custom-scrollbar">
+        <div class="flex bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm w-max min-w-full">
+            <a href="?filter=semua" class="smooth-route flex-1 text-center px-4 py-2.5 rounded-lg text-xs font-extrabold transition-colors {{ $filterTarget == 'semua' ? 'bg-sky-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50' }}">Semua ({{ $summary['semua'] ?? 0 }})</a>
+            
+            @if(in_array('balita', $hakAkses))
+            <a href="?filter=balita" class="smooth-route flex-1 text-center px-4 py-2.5 rounded-lg text-xs font-extrabold transition-colors {{ $filterTarget == 'balita' ? 'bg-rose-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50' }}">Balita ({{ $summary['balita'] ?? 0 }})</a>
+            @endif
+
+            @if(in_array('remaja', $hakAkses))
+            <a href="?filter=remaja" class="smooth-route flex-1 text-center px-4 py-2.5 rounded-lg text-xs font-extrabold transition-colors {{ $filterTarget == 'remaja' ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50' }}">Remaja ({{ $summary['remaja'] ?? 0 }})</a>
+            @endif
+
+            @if(in_array('lansia', $hakAkses))
+            <a href="?filter=lansia" class="smooth-route flex-1 text-center px-4 py-2.5 rounded-lg text-xs font-extrabold transition-colors {{ $filterTarget == 'lansia' ? 'bg-amber-500 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50' }}">Lansia ({{ $summary['lansia'] ?? 0 }})</a>
+            @endif
+        </div>
+    </div>
+
+    <div class="space-y-4">
         @forelse($jadwalKegiatan as $jadwal)
-        <div class="col-md-6 col-lg-4">
-            <div class="card border-0 shadow-sm h-100 hover-card overflow-hidden">
-                
-                {{-- Logika Warna Strip & Status Hari Ini --}}
-                @php
-                    $stripColor = match($jadwal->target_peserta) {
-                        'balita' => 'bg-info',     // Biru untuk Balita
-                        'lansia' => 'bg-warning',  // Kuning untuk Lansia
-                        'remaja' => 'bg-primary',  // Biru Tua untuk Remaja
-                        default => 'bg-success'    // Hijau untuk Umum
-                    };
-                    $isToday = \Carbon\Carbon::parse($jadwal->tanggal)->isToday();
-                @endphp
-                
-                {{-- Garis Indikator Warna di Atas Kartu --}}
-                <div class="{{ $stripColor }}" style="height: 5px;"></div>
+            @php
+                $tgl = \Carbon\Carbon::parse($jadwal->tanggal);
+                $isPast = $tgl->isPast() && !$tgl->isToday();
+            @endphp
 
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        {{-- Kotak Tanggal --}}
-                        <div class="bg-light border rounded px-3 py-2 text-center" style="min-width: 60px;">
-                            <span class="d-block h4 mb-0 fw-bold {{ $isToday ? 'text-danger' : 'text-dark' }}">
-                                {{ \Carbon\Carbon::parse($jadwal->tanggal)->format('d') }}
-                            </span>
-                            <small class="text-uppercase fw-bold text-secondary" style="font-size: 0.7rem;">
-                                {{ \Carbon\Carbon::parse($jadwal->tanggal)->format('M') }}
-                            </small>
-                        </div>
+            <div class="bg-white border border-slate-100 rounded-[20px] p-4 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex gap-4 sm:gap-5 hover:shadow-md transition-shadow relative overflow-hidden {{ $isPast ? 'opacity-60 grayscale-[50%]' : '' }}">
+                
+                <div class="{{ $isPast ? 'bg-slate-500' : 'date-badge' }} w-16 h-20 sm:w-20 sm:h-24 rounded-2xl flex flex-col items-center justify-center text-white shadow-inner shrink-0">
+                    <span class="text-xs sm:text-sm font-bold uppercase tracking-widest opacity-90 mb-0.5">{{ $tgl->translatedFormat('M') }}</span>
+                    <span class="text-2xl sm:text-3xl font-black font-poppins leading-none">{{ $tgl->format('d') }}</span>
+                    <span class="text-[10px] font-medium mt-1 opacity-80">{{ $tgl->format('Y') }}</span>
+                </div>
 
-                        {{-- Badges Status & Target --}}
-                        <div class="text-end">
-                            @if($isToday)
-                                <span class="badge bg-danger animate-pulse mb-1">HARI INI</span><br>
-                            @endif
-                            <span class="badge bg-white text-secondary border">{{ ucfirst($jadwal->target_peserta) }}</span>
-                        </div>
+                <div class="flex-1 min-w-0 py-1">
+                    <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                        <span class="px-2 py-0.5 {{ $isPast ? 'bg-slate-100 text-slate-500' : 'bg-teal-50 text-teal-600 border border-teal-100' }} rounded text-[9px] font-black uppercase tracking-widest">{{ $jadwal->kategori }}</span>
+                        @if($tgl->isToday())
+                            <span class="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-[9px] font-black uppercase tracking-widest animate-pulse">Hari Ini!</span>
+                        @endif
+                        @if($isPast)
+                            <span class="text-[10px] font-bold text-rose-500"><i class="fas fa-history"></i> Telah Berlalu</span>
+                        @endif
                     </div>
                     
-                    {{-- Judul & Deskripsi --}}
-                    <h5 class="fw-bold text-dark mb-2 line-clamp-2" title="{{ $jadwal->judul }}">{{ $jadwal->judul }}</h5>
-                    <p class="text-muted small mb-3">{{ Str::limit($jadwal->deskripsi, 80) }}</p>
+                    <h3 class="text-base sm:text-lg font-black text-slate-800 font-poppins leading-tight mb-2 truncate">{{ $jadwal->judul }}</h3>
                     
-                    <hr class="border-light">
-
-                    {{-- Detail Info Icon --}}
-                    <div class="d-flex flex-column gap-2 text-secondary small">
-                        <div class="d-flex align-items-center">
-                            <i class="far fa-clock me-3 text-center" style="width: 20px;"></i> 
-                            {{ \Carbon\Carbon::parse($jadwal->waktu_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($jadwal->waktu_selesai)->format('H:i') }} WIB
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-map-marker-alt me-3 text-center" style="width: 20px;"></i> 
-                            {{ $jadwal->lokasi }}
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-tag me-3 text-center" style="width: 20px;"></i> 
-                            Kategori: {{ ucfirst($jadwal->kategori) }}
-                        </div>
+                    <div class="flex flex-col gap-1.5 text-xs font-semibold text-slate-500">
+                        <p><i class="fas fa-clock text-slate-400 w-4 text-center"></i> {{ date('H:i', strtotime($jadwal->waktu_mulai)) }} - {{ date('H:i', strtotime($jadwal->waktu_selesai)) }} WIB</p>
+                        <p class="truncate"><i class="fas fa-map-marker-alt text-rose-400 w-4 text-center"></i> {{ $jadwal->lokasi }}</p>
+                        <p><i class="fas fa-users text-sky-400 w-4 text-center"></i> Target: <span class="text-slate-700 font-bold uppercase">{{ str_replace('_', ' ', $jadwal->target_peserta) }}</span></p>
                     </div>
+
+                    @if($jadwal->deskripsi)
+                        <div class="mt-3 p-2.5 bg-slate-50 rounded-xl text-[11px] text-slate-600 leading-relaxed border border-slate-100">
+                            <strong><i class="fas fa-info-circle text-slate-400 mr-1"></i> Info:</strong> {{ $jadwal->deskripsi }}
+                        </div>
+                    @endif
                 </div>
             </div>
-        </div>
         @empty
-        {{-- Tampilan Kosong --}}
-        <div class="col-12 text-center py-5">
-            <div class="mb-3">
-                <i class="far fa-calendar-times fa-4x text-muted opacity-25"></i>
+            <div class="text-center py-16 px-4 bg-white border border-slate-100 rounded-[24px] shadow-sm">
+                <div class="w-20 h-20 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-slate-300">
+                    <i class="fas fa-calendar-times"></i>
+                </div>
+                <h4 class="text-base font-black text-slate-700 font-poppins mb-1">Agenda Kosong</h4>
+                <p class="text-xs font-medium text-slate-500">Belum ada jadwal posyandu untuk kategori ini.</p>
             </div>
-            <h6 class="fw-bold text-muted">Belum ada jadwal kegiatan.</h6>
-            <p class="small text-muted">Silakan cek kembali nanti untuk informasi terbaru.</p>
-        </div>
         @endforelse
+
+        @if($jadwalKegiatan->hasPages())
+        <div class="mt-6">
+            {{ $jadwalKegiatan->appends(request()->query())->links() }}
+        </div>
+        @endif
     </div>
 
-    {{-- Pagination Link --}}
-    <div class="d-flex justify-content-center mt-4">
-        {{ $jadwalKegiatan->links() }}
-    </div>
 </div>
-
-{{-- CSS Tambahan Langsung di Halaman Ini --}}
-<style>
-    .hover-card { 
-        transition: transform 0.2s ease, box-shadow 0.2s ease; 
-    }
-    .hover-card:hover { 
-        transform: translateY(-5px); 
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; 
-    }
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.6; }
-        100% { opacity: 1; }
-    }
-    .animate-pulse { 
-        animation: pulse 1.5s infinite; 
-    }
-</style>
 @endsection

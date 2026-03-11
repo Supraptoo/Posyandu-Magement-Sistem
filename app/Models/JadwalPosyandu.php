@@ -4,32 +4,78 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class JadwalPosyandu extends Model
 {
     use HasFactory;
 
-    // Pastikan nama tabel benar (biasanya laravel mencari jadwal_posyandus)
-    // Jika nama tabel di database Anda 'jadwal_posyandu', gunakan ini:
     protected $table = 'jadwal_posyandu';
 
-    // IZINKAN KOLOM INI DIISI (Solusi Masalah Anda)
     protected $fillable = [
-        'judul',
-        'deskripsi',
-        'tanggal',
-        'waktu_mulai',
-        'waktu_selesai',
-        'lokasi',
-        'kategori',
-        'target_peserta',
-        'status',
-        'created_by'
+        'judul', 'deskripsi', 'tanggal', 'waktu_mulai',
+        'waktu_selesai', 'lokasi', 'kategori',
+        'target_peserta', 'status', 'created_by'
     ];
 
     protected $casts = [
-        'tanggal' => 'date',        // Ubah tanggal jadi objek Date
-        'waktu_mulai' => 'datetime',  // Ubah waktu jadi objek Datetime
-        'waktu_selesai' => 'datetime' // Ubah waktu jadi objek Datetime
+        'tanggal' => 'date',
+        // waktu_mulai & waktu_selesai dibiarkan string (kolom TIME di MySQL)
+        // parsing manual di blade/controller agar tidak error
     ];
+
+    // Scope: hanya yang aktif
+    public function scopeAktif($query)
+    {
+        return $query->where('status', 'aktif');
+    }
+
+    // Scope: akan datang (hari ini ke depan)
+    public function scopeMendatang($query)
+    {
+        return $query->whereDate('tanggal', '>=', Carbon::today());
+    }
+
+    // Scope: sudah lewat
+    public function scopeLewat($query)
+    {
+        return $query->whereDate('tanggal', '<', Carbon::today());
+    }
+
+    // Accessor: apakah hari ini
+    public function getIsTodayAttribute(): bool
+    {
+        return Carbon::parse($this->tanggal)->isToday();
+    }
+
+    // Accessor: apakah sudah lewat
+    public function getIsPastAttribute(): bool
+    {
+        return Carbon::parse($this->tanggal)->isPast()
+            && !Carbon::parse($this->tanggal)->isToday();
+    }
+
+    // Warna strip berdasarkan target peserta
+    public function getStripColorAttribute(): string
+    {
+        return match($this->target_peserta) {
+            'balita'    => '#06b6d4',
+            'remaja'    => '#6366f1',
+            'lansia'    => '#f59e0b',
+            'ibu_hamil' => '#ec4899',
+            default     => '#10b981',
+        };
+    }
+
+    // Label target peserta
+    public function getLabelTargetAttribute(): string
+    {
+        return match($this->target_peserta) {
+            'balita'    => 'Balita',
+            'remaja'    => 'Remaja',
+            'lansia'    => 'Lansia',
+            'ibu_hamil' => 'Ibu Hamil',
+            default     => 'Semua',
+        };
+    }
 }

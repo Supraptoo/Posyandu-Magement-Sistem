@@ -1,297 +1,232 @@
 @extends('layouts.bidan')
 
-@section('title', 'Riwayat Medis & Validasi')
-@section('page-title', 'Riwayat Pemeriksaan')
-@section('page-subtitle', 'Rekam jejak pemeriksaan & validasi data dari Kader')
+@section('title', 'Validasi Pemeriksaan')
+@section('page-name', 'Riwayat & Validasi')
+
+@push('styles')
+<style>
+    .animate-slide-up { opacity: 0; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+@endpush
 
 @section('content')
-
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
-        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div id="smoothLoader" class="fixed inset-0 bg-slate-50/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center transition-all duration-300 opacity-100">
+    <div class="relative w-20 h-20 flex items-center justify-center mb-4">
+        <div class="absolute inset-0 border-4 border-cyan-100 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-cyan-600 rounded-full border-t-transparent animate-spin"></div>
+        <i class="fas fa-heartbeat text-cyan-600 text-2xl animate-pulse"></i>
     </div>
-@endif
+    <p class="text-cyan-800 font-extrabold tracking-widest text-sm animate-pulse">MEMUAT DATA...</p>
+</div>
 
-{{-- KARTU STATISTIK --}}
-<div class="row g-3 mb-4">
-    @php
-        $statCards = [
-            ['pending',  'warning', 'clock',        'Menunggu Validasi'],
-            ['verified', 'success', 'check-circle', 'Terverifikasi'],
-            ['rejected', 'danger',  'times-circle', 'Ditolak'],
-            ['total',    'primary', 'list',         'Total Data'],
-        ];
-    @endphp
-    @foreach($statCards as [$key, $color, $icon, $label])
-    <div class="col-6 col-md-3">
-        <div class="card border-0 shadow-sm h-100 rounded-4">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-{{ $color }} bg-opacity-10 p-3 flex-shrink-0">
-                    <i class="fas fa-{{ $icon }} text-{{ $color }} fa-lg"></i>
-                </div>
-                <div>
-                    <div class="fs-4 fw-bold lh-1">{{ $stats[$key] }}</div>
-                    <div class="text-muted small mt-1">{{ $label }}</div>
-                </div>
+<div class="max-w-7xl mx-auto animate-slide-up">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-[18px] bg-cyan-100 text-cyan-600 flex items-center justify-center text-2xl shadow-inner border border-cyan-200">
+                <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Riwayat & Validasi</h1>
+                <p class="text-slate-500 mt-1 font-medium text-sm">Kelola dan berikan diagnosa pada data pemeriksaan warga.</p>
             </div>
         </div>
+        <a href="{{ route('bidan.pemeriksaan.create') }}" class="smooth-route inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-cyan-600 text-white font-extrabold text-sm rounded-xl hover:bg-cyan-700 shadow-[0_4px_12px_rgba(8,145,178,0.3)] hover:-translate-y-0.5 transition-all">
+            <i class="fas fa-plus"></i> Input Manual
+        </a>
     </div>
-    @endforeach
-</div>
 
-{{-- FILTER --}}
-<div class="card border-0 shadow-sm rounded-4 mb-4">
-    <div class="card-body">
-        <form method="GET" class="row g-2 align-items-end">
-            <div class="col-12 col-md-3">
-                <label class="form-label small fw-semibold">Cari Nama Pasien</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                    <input type="text" name="search" class="form-control border-start-0"
-                           placeholder="Cari nama..." value="{{ request('search') }}">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Antrian Validasi</p>
+                <h3 class="text-2xl font-black text-rose-600">{{ $stats['pending'] ?? 0 }} <span class="text-sm font-bold text-slate-500">Pasien</span></h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-xl"><i class="fas fa-hourglass-half"></i></div>
+        </div>
+        <div class="bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Selesai Diverifikasi</p>
+                <h3 class="text-2xl font-black text-emerald-600">{{ $stats['verified'] ?? 0 }} <span class="text-sm font-bold text-slate-500">Data</span></h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl"><i class="fas fa-check-double"></i></div>
+        </div>
+        <div class="bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Total Pemeriksaan</p>
+                <h3 class="text-2xl font-black text-cyan-600">{{ $stats['total'] ?? 0 }} <span class="text-sm font-bold text-slate-500">Data</span></h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-cyan-50 text-cyan-500 flex items-center justify-center text-xl"><i class="fas fa-notes-medical"></i></div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        
+        <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+            <form id="filterForm" action="{{ route('bidan.pemeriksaan.index') }}" method="GET" class="flex flex-wrap md:flex-nowrap gap-3">
+                
+                <div class="w-full md:w-2/5 relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama pasien (Tekan Enter)..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-cyan-100 focus:border-cyan-500 outline-none transition-all">
                 </div>
-            </div>
-            <div class="col-6 col-md-2">
-                <label class="form-label small fw-semibold">Kategori</label>
-                <select name="kategori" class="form-select">
-                    <option value="">Semua</option>
-                    @foreach(['balita','remaja','lansia'] as $k)
-                        <option value="{{ $k }}" {{ request('kategori') == $k ? 'selected' : '' }}>
-                            {{ ucfirst($k) }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-6 col-md-2">
-                <label class="form-label small fw-semibold">Status Validasi</label>
-                <select name="status" class="form-select">
-                    <option value="">Semua Status</option>
-                    <option value="pending"  {{ request('status') == 'pending'  ? 'selected' : '' }}>⏳ Pending</option>
-                    <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>✅ Terverifikasi</option>
-                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>❌ Ditolak</option>
-                </select>
-            </div>
-            <div class="col-6 col-md-2">
-                <label class="form-label small fw-semibold">Bulan</label>
-                <select name="bulan" class="form-select">
-                    <option value="">Semua Bulan</option>
-                    @foreach(range(1,12) as $b)
-                        <option value="{{ $b }}" {{ request('bulan') == $b ? 'selected' : '' }}>
-                            {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-6 col-md-1">
-                <label class="form-label small fw-semibold">Tahun</label>
-                <input type="number" name="tahun" class="form-control"
-                       value="{{ request('tahun', date('Y')) }}" min="2020" max="2030">
-            </div>
-            <div class="col-12 col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-fill">
-                    <i class="fas fa-filter me-1"></i>Filter
-                </button>
-                <a href="{{ route('bidan.pemeriksaan.index') }}" class="btn btn-outline-secondary" title="Reset">
-                    <i class="fas fa-undo"></i>
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
 
-{{-- TABEL --}}
-<div class="card border-0 shadow-sm rounded-4">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4 py-3">Tanggal</th>
-                        <th>Nama Pasien</th>
-                        <th>Kategori</th>
-                        <th>Hasil Diagnosa</th>
-                        <th>Status Kesehatan</th>
-                        <th>Validasi</th>
-                        <th class="text-center pe-4">Aksi</th>
+                <div class="w-full md:w-1/4">
+                    <select name="kategori" class="auto-submit w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-cyan-100 outline-none cursor-pointer">
+                        <option value="">Semua Kategori</option>
+                        <option value="balita" {{ request('kategori') == 'balita' ? 'selected' : '' }}>Balita</option>
+                        <option value="remaja" {{ request('kategori') == 'remaja' ? 'selected' : '' }}>Remaja</option>
+                        <option value="lansia" {{ request('kategori') == 'lansia' ? 'selected' : '' }}>Lansia</option>
+                    </select>
+                </div>
+
+                <div class="w-full md:w-1/4">
+                    <select name="status" class="auto-submit w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-cyan-100 outline-none cursor-pointer">
+                        <option value="">Semua Status</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu Validasi</option>
+                        <option value="verified" {{ request('status') == 'verified' ? 'selected' : '' }}>Telah Diverifikasi</option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                    </select>
+                </div>
+
+                <div class="w-full md:w-auto flex justify-end">
+                    @if(request()->anyFilled(['search', 'kategori', 'status', 'bulan']))
+                        <a href="{{ route('bidan.pemeriksaan.index') }}" class="smooth-route flex items-center justify-center w-11 h-11 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 transition-colors" title="Reset Filter">
+                            <i class="fas fa-undo"></i>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
+                    <tr class="bg-white border-b border-slate-100">
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Tgl / Waktu</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Data Pasien</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Hasil Ukur (Kader)</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-center">Status Verifikasi</th>
+                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest text-right">Tindakan Medis</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-50">
                     @forelse($riwayat as $item)
-                    <tr class="{{ ($item->status_verifikasi ?? 'pending') === 'pending' ? 'table-warning bg-opacity-25' : '' }}">
-                        <td class="ps-4">
-                            <div class="small fw-semibold">
-                                {{ $item->tanggal_periksa?->format('d/m/Y') ?? '-' }}
-                            </div>
-                            <div class="text-muted" style="font-size:0.75rem">
-                                {{ $item->pemeriksa?->name ?? 'Sistem' }}
-                            </div>
+                    <tr class="hover:bg-slate-50/80 transition-colors group">
+                        
+                        <td class="px-6 py-4 align-top">
+                            <p class="font-bold text-slate-800 text-sm">{{ \Carbon\Carbon::parse($item->tanggal_periksa)->format('d M Y') }}</p>
+                            <p class="text-[11px] font-bold text-slate-400 mt-0.5"><i class="fas fa-clock mr-1"></i> {{ $item->created_at->format('H:i') }} WIB</p>
                         </td>
-                        <td>
-                            <span class="fw-bold d-block">{{ $item->nama_pasien }}</span>
+
+                        <td class="px-6 py-4 align-top">
+                            <p class="font-bold text-slate-700 text-sm mb-1 truncate max-w-[200px]">
+                                {{ $item->nama_pasien ?? ($item->balita->nama_lengkap ?? ($item->remaja->nama_lengkap ?? ($item->lansia->nama_lengkap ?? '-'))) }}
+                            </p>
+                            @if($item->kategori_pasien == 'balita') <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-[9px] font-extrabold rounded border border-rose-200 uppercase">Balita</span>
+                            @elseif($item->kategori_pasien == 'remaja') <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-extrabold rounded border border-indigo-200 uppercase">Remaja</span>
+                            @else <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-extrabold rounded border border-emerald-200 uppercase">Lansia</span> @endif
                         </td>
-                        <td>
-                            @php
-                                $kMap = ['balita'=>['info','baby'], 'remaja'=>['success','user-graduate'], 'lansia'=>['warning','wheelchair']];
-                                [$kColor, $kIcon] = $kMap[$item->kategori_pasien] ?? ['secondary','user'];
-                            @endphp
-                            <span class="badge bg-{{ $kColor }} bg-opacity-10 text-{{ $kColor }}">
-                                <i class="fas fa-{{ $kIcon }} me-1"></i>{{ ucfirst($item->kategori_pasien) }}
-                            </span>
-                        </td>
-                        <td class="text-muted small" style="max-width:180px">
-                            {{ Str::limit($item->diagnosa ?? 'Belum ada diagnosa', 45) }}
-                        </td>
-                        <td>
-                            @if(in_array($item->status_gizi, ['stunting','buruk','risiko']))
-                                <span class="badge bg-danger">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>PERHATIAN
-                                </span>
-                            @elseif(in_array($item->status_gizi, ['obesitas','lebih']))
-                                <span class="badge bg-warning text-dark">OBESITAS</span>
-                            @else
-                                <span class="badge bg-light text-secondary border">Normal</span>
-                            @endif
-                        </td>
-                        <td>
-                            <span class="badge bg-{{ $item->status_verifikasi_badge }} bg-opacity-75">
-                                <i class="fas fa-{{ ($item->status_verifikasi ?? 'pending') === 'verified' ? 'check' : (($item->status_verifikasi ?? 'pending') === 'rejected' ? 'times' : 'clock') }} me-1"></i>
-                                {{ $item->status_verifikasi_label }}
-                            </span>
-                        </td>
-                        <td class="text-center pe-4">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <a href="{{ route('bidan.pemeriksaan.show', $item->id) }}"
-                                   class="btn btn-sm btn-light text-primary border" title="Detail & Validasi">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                @if(($item->status_verifikasi ?? 'pending') === 'pending')
-                                    <button type="button"
-                                            class="btn btn-sm btn-success btn-verifikasi-cepat"
-                                            data-id="{{ $item->id }}"
-                                            data-nama="{{ $item->nama_pasien }}"
-                                            title="Verifikasi Cepat">
-                                        <i class="fas fa-check"></i>
-                                    </button>
+
+                        <td class="px-6 py-4 align-top">
+                            <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                                <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded border border-slate-200">BB: <span class="font-black text-slate-800">{{ $item->berat_badan ?? '-' }} kg</span></span>
+                                <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded border border-slate-200">TB: <span class="font-black text-slate-800">{{ $item->tinggi_badan ?? '-' }} cm</span></span>
+                                @if($item->tekanan_darah)
+                                    <span class="px-2 py-1 {{ intval(explode('/', $item->tekanan_darah)[0]) >= 140 ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200' }} rounded border">
+                                        TD: <span class="font-black">{{ $item->tekanan_darah }}</span>
+                                    </span>
                                 @endif
                             </div>
                         </td>
+
+                        <td class="px-6 py-4 text-center align-middle">
+                            @if($item->status_verifikasi == 'verified')
+                                <span class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[11px] font-bold border border-emerald-200"><i class="fas fa-check-circle"></i> Terverifikasi</span>
+                            @elseif($item->status_verifikasi == 'pending')
+                                <span class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 text-[11px] font-bold border border-amber-200 animate-pulse"><i class="fas fa-hourglass-half"></i> Menunggu Bidan</span>
+                            @else
+                                <span class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-[11px] font-bold border border-rose-200"><i class="fas fa-times-circle"></i> Ditolak</span>
+                            @endif
+                        </td>
+
+                        <td class="px-6 py-4 text-right align-middle">
+                            @if($item->status_verifikasi == 'pending')
+                                <a href="{{ route('bidan.pemeriksaan.show', $item->id) }}" class="smooth-route inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white text-xs font-bold rounded-xl hover:from-cyan-600 hover:to-cyan-700 shadow-[0_4px_10px_rgba(8,145,178,0.3)] transition-all transform hover:-translate-y-0.5">
+                                    <i class="fas fa-stethoscope"></i> Validasi
+                                </a>
+                            @else
+                                <a href="{{ route('bidan.pemeriksaan.show', $item->id) }}" class="smooth-route inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                                    <i class="fas fa-file-medical"></i> Detail
+                                </a>
+                            @endif
+                        </td>
+
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
-                            <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>
-                            Belum ada riwayat pemeriksaan.
+                        <td colspan="5" class="text-center py-16">
+                            <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mx-auto mb-4 text-3xl shadow-inner"><i class="fas fa-folder-open"></i></div>
+                            <h4 class="font-black text-slate-700 text-sm">Tidak ada data pemeriksaan</h4>
+                            <p class="text-xs text-slate-500 mt-1">Belum ada data yang sesuai dengan filter Anda saat ini.</p>
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
-
-    @if($riwayat->hasPages())
-    <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center rounded-bottom-4">
-        <div class="text-muted small">
-            Menampilkan {{ $riwayat->firstItem() }}–{{ $riwayat->lastItem() }}
-            dari {{ $riwayat->total() }} data
+        
+        @if($riwayat->hasPages())
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 pagination-wrapper">
+            {{ $riwayat->links() }}
         </div>
-        {{ $riwayat->links() }}
-    </div>
-    @endif
-</div>
+        @endif
 
-{{-- MODAL VERIFIKASI CEPAT --}}
-<div class="modal fade" id="modalVerifikasiCepat" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header bg-success text-white rounded-top-4">
-                <h5 class="modal-title">
-                    <i class="fas fa-check-circle me-2"></i>Verifikasi Cepat
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="formVerifikasiCepat">
-                @csrf
-                <div class="modal-body p-4">
-                    <p class="text-muted mb-3">
-                        Memverifikasi: <strong id="namaModalCepat"></strong>
-                    </p>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            Diagnosa <span class="text-danger">*</span>
-                        </label>
-                        <textarea name="diagnosa" id="diagnosaCepat" class="form-control" rows="3"
-                                  placeholder="Tulis diagnosa bidan..." required></textarea>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label fw-semibold">Catatan Bidan</label>
-                        <textarea name="catatan_bidan" id="catatanBidanCepat" class="form-control" rows="2"
-                                  placeholder="Catatan tambahan (opsional)..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success px-4" id="btnSubmitVerifikasi">
-                        <i class="fas fa-check me-2"></i>Verifikasi
-                    </button>
-                </div>
-            </form>
-        </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
-let currentId = null;
-
-document.querySelectorAll('.btn-verifikasi-cepat').forEach(btn => {
-    btn.addEventListener('click', function () {
-        currentId = this.dataset.id;
-        document.getElementById('namaModalCepat').textContent = this.dataset.nama;
-        document.getElementById('diagnosaCepat').value = '';
-        document.getElementById('catatanBidanCepat').value = '';
-        new bootstrap.Modal(document.getElementById('modalVerifikasiCepat')).show();
-     // ✅ Tambahkan ini — pindahkan modal ke body agar tidak ter-overlap
-        const modal = document.getElementById('modalVerifikasiCepat');
-        document.body.appendChild(modal);
-
-        new bootstrap.Modal(modal).show();
-    });
-});
-
-document.getElementById('formVerifikasiCepat').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    if (!currentId) return;
-
-    const btn = document.getElementById('btnSubmitVerifikasi');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
-
-    try {
-        const res = await fetch(`/bidan/pemeriksaan/${currentId}/verifikasi-cepat`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: new FormData(this),
-        });
-        const data = await res.json();
-        if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('modalVerifikasiCepat')).hide();
-            window.location.reload();
-        } else {
-            alert('Gagal menyimpan. Coba lagi.');
+    // FUNGSI TRANISI HALAMAN (SPA-FEEL)
+    const showLoader = () => {
+        const loader = document.getElementById('smoothLoader');
+        if(loader) {
+            loader.style.display = 'flex';
+            loader.offsetHeight; 
+            loader.classList.remove('opacity-0', 'pointer-events-none');
+            loader.classList.add('opacity-100');
         }
-    } catch {
-        alert('Terjadi kesalahan. Coba lagi.');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check me-2"></i>Verifikasi';
-    }
-});
+    };
+
+    // Hilangkan loader saat halaman selesai dimuat (juga handle tombol Back browser)
+    window.addEventListener('pageshow', () => {
+        const loader = document.getElementById('smoothLoader');
+        if(loader) {
+            loader.classList.remove('opacity-100');
+            loader.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => loader.style.display = 'none', 300);
+        }
+    });
+
+    // Auto-Submit Filter Dropdown
+    document.querySelectorAll('.auto-submit').forEach(select => {
+        select.addEventListener('change', function() {
+            showLoader();
+            document.getElementById('filterForm').submit();
+        });
+    });
+
+    // Cegah hard-refresh saat tekan tombol Enter di pencarian
+    document.getElementById('filterForm').addEventListener('submit', showLoader);
+
+    // Animasi untuk link route & pagination
+    document.querySelectorAll('.smooth-route, .pagination-wrapper a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if(this.target !== '_blank' && !e.ctrlKey && !e.metaKey) {
+                showLoader();
+            }
+        });
+    });
 </script>
 @endpush
-@endsection

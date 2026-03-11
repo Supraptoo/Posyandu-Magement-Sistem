@@ -1,698 +1,456 @@
-﻿<!DOCTYPE html>
+﻿{{--
+  PATH   : resources/views/layouts/app.blade.php
+  FUNGSI : Layout utama untuk semua role (admin, bidan, kader, user)
+  CATATAN: Bug fix -> auth()->user()->name (bukan ->nama)
+           Sidebar dark, konten center, font Inter dari Google Fonts
+           Fully responsive + mobile-first
+--}}
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>@yield('title') - SIPOSYANDU</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
-    <!-- Bootstrap CSS -->
+    <title>@yield('title', 'SIPOSYANDU') — SIPOSYANDU</title>
+
+    {{-- Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    {{-- CSS --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- SweetAlert2 -->
+
+    {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- Custom CSS -->
+
     <style>
-        :root {
-            --dark-bg: #222831;
-            --dark-secondary: #393E46;
-            --accent-cyan: #00ADB5;
-            --light-gray: #EEEEEE;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-gray);
-            overflow-x: hidden;
-            min-height: 100vh;
-            padding-top: 70px; /* Untuk fixed navbar */
-        }
-        
-        /* Fixed Navbar */
-        .navbar-custom {
-            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-secondary) 100%);
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            padding: 0.75rem 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1050;
-            height: 70px;
-            transition: all 0.3s ease;
-        }
-        
-        .navbar-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: white !important;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-        
-        .navbar-brand:hover {
-            color: var(--accent-cyan) !important;
-        }
-        
-        .navbar-brand i {
-            color: var(--accent-cyan);
-            margin-right: 0.5rem;
-        }
-        
-        /* Mobile Menu Toggle */
-        .mobile-menu-toggle {
-            display: none;
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .mobile-menu-toggle:hover {
-            color: var(--accent-cyan);
-        }
-        
-        /* User Profile in Navbar */
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .user-profile i {
-            font-size: 1.5rem;
-        }
-        
-        /* Badge */
-        .role-badge {
-            background: var(--accent-cyan);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
-        }
-        
-        /* Sidebar */
-        .sidebar-wrapper {
-            position: fixed;
-            left: 0;
-            top: 70px; /* Di bawah navbar */
-            height: calc(100vh - 70px);
-            width: 260px;
-            background: linear-gradient(180deg, var(--dark-bg) 0%, var(--dark-secondary) 100%);
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1040;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-        
-        .sidebar-wrapper::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .sidebar-wrapper::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
-        .sidebar-wrapper::-webkit-scrollbar-thumb {
-            background: var(--accent-cyan);
-            border-radius: 10px;
-        }
-        
-        /* Sidebar state for desktop */
-        .sidebar-wrapper.hidden-desktop {
-            left: -260px;
-        }
-        
-        /* Sidebar state for mobile */
-        .sidebar-wrapper.hidden-mobile {
-            left: -260px;
-        }
-        
-        .sidebar-wrapper.show-mobile {
-            left: 0;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .sidebar-header {
-            padding: 1.5rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .sidebar-header h5 {
-            color: white;
-            margin: 0;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        
-        .sidebar-header i {
-            color: var(--accent-cyan);
-            margin-right: 0.5rem;
-        }
-        
-        .sidebar-menu {
-            padding: 1rem 0.5rem;
-        }
-        
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 0.85rem 1.25rem;
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            border-radius: 10px;
-            margin-bottom: 0.5rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .sidebar-menu a::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: var(--accent-cyan);
-            transform: scaleY(0);
-            transition: transform 0.3s ease;
-        }
-        
-        .sidebar-menu a:hover {
-            background: rgba(0, 173, 181, 0.15);
-            color: white;
-            padding-left: 1.5rem;
-        }
-        
-        .sidebar-menu a:hover::before {
-            transform: scaleY(1);
-        }
-        
-        .sidebar-menu a.active {
-            background: var(--accent-cyan);
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 173, 181, 0.3);
-        }
-        
-        .sidebar-menu a.active::before {
-            transform: scaleY(1);
-            background: white;
-        }
-        
-        .sidebar-menu a i {
-            width: 25px;
-            text-align: center;
-            margin-right: 0.75rem;
-            font-size: 1.1rem;
-        }
-        
-        /* Main Content */
-        .main-content-wrapper {
-            margin-left: 260px;
-            padding: 2rem;
-            min-height: calc(100vh - 70px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .main-content-wrapper.expanded {
-            margin-left: 0;
-        }
-        
-        /* Overlay for mobile sidebar */
-        .sidebar-overlay {
-            position: fixed;
-            top: 70px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1035;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(2px);
-        }
-        
-        .sidebar-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            body {
-                padding-top: 70px;
-            }
-            
-            .mobile-menu-toggle {
-                display: block;
-            }
-            
-            .sidebar-wrapper {
-                left: -260px;
-                top: 70px;
-                height: calc(100vh - 70px);
-            }
-            
-            .sidebar-wrapper.show-mobile {
-                left: 0;
-            }
-            
-            .main-content-wrapper {
-                margin-left: 0;
-                padding: 1.5rem;
-            }
-            
-            /* Hide desktop user profile dropdown on mobile */
-            .nav-item.dropdown {
-                display: none;
-            }
-            
-            /* Mobile user info in sidebar */
-            .mobile-user-info {
-                display: block !important;
-                padding: 1rem 1.5rem;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                margin-bottom: 1rem;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .main-content-wrapper {
-                padding: 1rem;
-            }
-            
-            .navbar-brand {
-                font-size: 1.2rem;
-            }
-            
-            body {
-                padding-top: 60px;
-            }
-            
-            .navbar-custom {
-                height: 60px;
-                padding: 0.5rem 0;
-            }
-            
-            .sidebar-wrapper {
-                top: 60px;
-                height: calc(100vh - 60px);
-                width: 280px; /* Lebih lebar di mobile */
-            }
-        }
-        
-        /* Mobile user info - hidden by default */
-        .mobile-user-info {
-            display: none;
-            color: white;
-        }
-        
-        .mobile-user-info .user-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .mobile-user-info .user-role {
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
-        
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .page-loading {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
-        /* Ensure content doesn't get hidden under fixed elements */
-        @media (min-width: 993px) {
-            .main-content-wrapper {
-                padding-top: 1rem;
-            }
-        }
+    /* ═══════════════════════════════════════════
+       SIPOSYANDU — Master Layout v2
+       Font: Inter | Tema: Teal Healthcare
+       Mobile-first | Centered Content
+    ═══════════════════════════════════════════ */
+    :root {
+        --nav-h:   60px;
+        --sb-w:    260px;
+        --t:       #0d9488;
+        --t2:      #0ea5e9;
+        --t-light: #f0fdfa;
+        --sb-bg:   #0f172a;
+        --sb-sec:  #1e293b;
+        --sb-muted:rgba(148,163,184,.6);
+        --bg:      #f1f5f9;
+        --card:    #ffffff;
+        --border:  #e2e8f0;
+        --txt:     #0f172a;
+        --muted:   #64748b;
+        --r:       14px;
+        --rs:      10px;
+        --shadow:  0 1px 3px rgba(0,0,0,.06), 0 4px 20px rgba(0,0,0,.05);
+        --grad:    linear-gradient(135deg, #0d9488, #0ea5e9);
+    }
 
-        /* Submenu styling */
-.sidebar-submenu {
-    padding-left: 2.5rem;
-    margin: 0.5rem 0;
-}
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
 
-.sidebar-submenu a {
-    padding: 0.6rem 1rem;
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
-    background: rgba(255, 255, 255, 0.05);
-}
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--txt);
+        min-height: 100vh;
+        padding-top: var(--nav-h);
+        overflow-x: hidden;
+        font-size: 14px;
+        line-height: 1.5;
+    }
 
-.sidebar-submenu a:hover {
-    background: rgba(0, 173, 181, 0.1);
-}
+    /* ── NAVBAR ─────────────────────────────────── */
+    .sp-nav {
+        position: fixed; top: 0; left: 0; right: 0;
+        z-index: 1060; height: var(--nav-h);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        display: flex; align-items: center;
+        padding: 0 1rem; gap: .5rem;
+        box-shadow: 0 2px 20px rgba(0,0,0,.3);
+    }
 
-.sidebar-collapse-toggle {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
+    .sp-toggle {
+        background: transparent; border: none;
+        color: rgba(255,255,255,.65); width: 36px; height: 36px;
+        border-radius: 8px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; transition: all .15s; flex-shrink: 0;
+    }
+    .sp-toggle:hover { background: rgba(255,255,255,.1); color: #fff; }
 
-.sidebar-collapse-toggle .fa-chevron-down {
-    transition: transform 0.3s ease;
-    font-size: 0.8rem;
-}
+    .sp-brand {
+        font-size: 1rem; font-weight: 800; color: #fff;
+        text-decoration: none; letter-spacing: -.02em;
+        display: flex; align-items: center; gap: .5rem;
+        white-space: nowrap; flex-shrink: 0;
+    }
+    .sp-brand .bic {
+        width: 32px; height: 32px; border-radius: 8px;
+        background: var(--grad);
+        display: flex; align-items: center; justify-content: center;
+        font-size: .85rem; color: #fff; flex-shrink: 0;
+    }
+    .sp-brand:hover { color: #2dd4bf; }
 
-.sidebar-collapse-toggle[aria-expanded="true"] .fa-chevron-down {
-    transform: rotate(180deg);
-}
+    .sp-right { margin-left: auto; display: flex; align-items: center; gap: .3rem; }
 
-/* Ensure active state works for nested routes */
-.sidebar-menu a.active,
-.sidebar-submenu a.active {
-    background: var(--accent-cyan);
-    color: white;
-    font-weight: 600;
-}
+    /* Bell */
+    .sp-bell {
+        position: relative; color: rgba(255,255,255,.65);
+        text-decoration: none; width: 36px; height: 36px;
+        border-radius: 8px; display: flex; align-items: center;
+        justify-content: center; font-size: .9rem; transition: all .15s;
+    }
+    .sp-bell:hover { background: rgba(255,255,255,.1); color: #fff; }
+    .sp-bell-dot {
+        position: absolute; top: 6px; right: 6px;
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #ef4444; border: 1.5px solid #0f172a; display: none;
+    }
+
+    /* User dropdown */
+    .sp-drop { position: relative; }
+    .sp-user {
+        display: flex; align-items: center; gap: .45rem;
+        color: rgba(255,255,255,.8); cursor: pointer;
+        border-radius: 10px; padding: .3rem .6rem;
+        transition: background .15s; user-select: none;
+    }
+    .sp-user:hover { background: rgba(255,255,255,.08); }
+    .sp-av {
+        width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+        background: var(--grad);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: .8rem; color: #fff;
+    }
+    .sp-uname { font-size: .8rem; font-weight: 600; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sp-role-chip {
+        font-size: .58rem; font-weight: 800; text-transform: uppercase;
+        background: var(--t); color: #fff; border-radius: 5px;
+        padding: .1rem .38rem; letter-spacing: .04em;
+    }
+    .sp-chevron { font-size: .5rem; opacity: .5; }
+
+    .sp-dropmenu {
+        position: absolute; top: calc(100% + 8px); right: 0;
+        background: #fff; border: 1px solid var(--border);
+        border-radius: 12px; padding: .35rem; min-width: 160px;
+        box-shadow: 0 8px 30px rgba(0,0,0,.14); display: none;
+        z-index: 9999; animation: dropIn .1s ease both;
+    }
+    @keyframes dropIn { from { opacity:0; transform:translateY(-5px) } to { opacity:1; transform:none } }
+    .sp-drop:hover .sp-dropmenu { display: block; }
+    .sp-dropmenu a, .sp-dropmenu button {
+        display: flex; align-items: center; gap: .45rem;
+        padding: .45rem .7rem; border-radius: 8px; width: 100%;
+        font-size: .8rem; font-weight: 600; color: var(--txt);
+        text-decoration: none; border: none; background: none; cursor: pointer;
+        transition: background .1s;
+    }
+    .sp-dropmenu a:hover, .sp-dropmenu button:hover { background: #f8fafc; }
+    .sp-dropmenu button { color: #dc2626; }
+    .sp-dropmenu .sp-sep { border-color: var(--border); margin: .25rem 0; }
+
+    /* ── SIDEBAR ─────────────────────────────────── */
+    .sp-sidebar {
+        position: fixed; top: var(--nav-h); left: 0;
+        z-index: 1040; width: var(--sb-w);
+        height: calc(100vh - var(--nav-h));
+        background: linear-gradient(180deg, var(--sb-bg) 0%, var(--sb-sec) 100%);
+        overflow-y: auto; overflow-x: hidden;
+        transition: transform .28s cubic-bezier(.4,0,.2,1);
+        scrollbar-width: thin; scrollbar-color: #1e3a5f transparent;
+    }
+    .sp-sidebar::-webkit-scrollbar { width: 3px; }
+    .sp-sidebar::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+    .sp-sidebar.sb-collapsed { transform: translateX(-100%); }
+
+    /* Sidebar items */
+    .sb-brand-area {
+        padding: 1rem 1rem .7rem;
+        border-bottom: 1px solid rgba(255,255,255,.07);
+        margin-bottom: .3rem;
+        display: flex; align-items: center; gap: .6rem;
+    }
+    .sb-brand-ic {
+        width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+        background: var(--grad);
+        display: flex; align-items: center; justify-content: center;
+        font-size: .9rem; color: #fff;
+    }
+    .sb-brand-name { font-size: .72rem; font-weight: 800; color: #fff; line-height: 1; }
+    .sb-brand-sub { font-size: .62rem; color: var(--sb-muted); margin-top: .08rem; }
+
+    .sb-section { padding: .7rem 1rem .2rem; font-size: .6rem; font-weight: 800;
+        letter-spacing: .1em; text-transform: uppercase; color: var(--sb-muted); user-select: none; }
+    .sb-divider { border-top: 1px solid rgba(255,255,255,.06); margin: .4rem .85rem; }
+
+    .sb-link {
+        display: flex; align-items: center; gap: .6rem;
+        padding: .62rem 1rem; color: rgba(255,255,255,.65);
+        text-decoration: none; border-radius: 9px;
+        margin: .08rem .55rem; font-size: .84rem; font-weight: 500;
+        transition: all .15s; position: relative; overflow: hidden;
+    }
+    .sb-link::before {
+        content: ''; position: absolute; left: 0; top: 15%; height: 70%;
+        width: 3px; background: var(--t); border-radius: 0 3px 3px 0;
+        transform: scaleX(0); transition: transform .15s; transform-origin: left;
+    }
+    .sb-link i { width: 16px; text-align: center; font-size: .85rem; flex-shrink: 0; }
+    .sb-link:hover { background: rgba(255,255,255,.07); color: #fff; padding-left: 1.25rem; }
+    .sb-link:hover::before { transform: scaleX(1); }
+    .sb-link.active {
+        background: linear-gradient(135deg, rgba(13,148,136,.38), rgba(14,165,233,.18));
+        color: #fff; font-weight: 700;
+    }
+    .sb-link.active::before { transform: scaleX(1); }
+    .sb-badge {
+        margin-left: auto; font-size: .57rem; font-weight: 800;
+        background: var(--t); color: #fff; border-radius: 30px;
+        padding: .08rem .4rem; line-height: 1.5;
+    }
+    .sb-badge.nik { background: #7c3aed; }
+    .sb-badge.email { background: #0284c7; }
+    .sb-logout { color: rgba(248,113,113,.7) !important; }
+    .sb-logout:hover { background: rgba(239,68,68,.1) !important; color: #fca5a5 !important; }
+
+    /* ── OVERLAY (mobile) ────────────────────────── */
+    .sp-overlay {
+        position: fixed; inset: var(--nav-h) 0 0 0; z-index: 1035;
+        background: rgba(0,0,0,.5); backdrop-filter: blur(3px);
+        opacity: 0; visibility: hidden; transition: all .25s;
+    }
+    .sp-overlay.show { opacity: 1; visibility: visible; }
+
+    /* ── MAIN CONTENT ────────────────────────────── */
+    .sp-main {
+        margin-left: var(--sb-w);
+        padding: 1.5rem;
+        min-height: calc(100vh - var(--nav-h));
+        transition: margin-left .28s cubic-bezier(.4,0,.2,1);
+        /* CENTER konten di layar lebar */
+    }
+    .sp-main.main-full { margin-left: 0; }
+
+    /* Wrapper center untuk konten */
+    .content-center {
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 992px) {
+        .sp-sidebar { transform: translateX(-100%); }
+        .sp-sidebar.sb-open { transform: translateX(0); }
+        .sp-main { margin-left: 0 !important; padding: 1rem; }
+        .sp-uname, .sp-role-chip, .sp-chevron { display: none; }
+    }
+
+    @media (max-width: 576px) {
+        body { font-size: 13px; }
+        :root { --nav-h: 56px; }
+        .sp-main { padding: .75rem; }
+        .sp-brand span.brand-text { display: none; }
+        .content-center { padding: 0; }
+    }
+
+    /* ── UTILITY CLASSES ─────────────────────────── */
+    .card-base {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .btn-primary-app {
+        background: var(--grad); color: #fff; border: none;
+        border-radius: var(--rs); padding: .55rem 1.25rem;
+        font-size: .84rem; font-weight: 700; cursor: pointer;
+        display: inline-flex; align-items: center; gap: .4rem;
+        text-decoration: none; transition: opacity .15s, transform .1s;
+        font-family: inherit;
+    }
+    .btn-primary-app:hover { opacity: .9; color: #fff; transform: translateY(-1px); }
+    .btn-secondary-app {
+        background: #f1f5f9; color: var(--muted); border: 1px solid var(--border);
+        border-radius: var(--rs); padding: .55rem 1.25rem;
+        font-size: .84rem; font-weight: 700; cursor: pointer;
+        display: inline-flex; align-items: center; gap: .4rem;
+        text-decoration: none; transition: background .12s;
+        font-family: inherit;
+    }
+    .btn-secondary-app:hover { background: #e2e8f0; color: var(--txt); }
+
+    /* Gradient text utility */
+    .text-grad {
+        background: var(--grad); -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent; background-clip: text;
+    }
     </style>
-    
+
     @stack('styles')
 </head>
 <body>
-    @if(auth()->check())
-    <!-- Fixed Navbar -->
-    <nav class="navbar navbar-custom">
-        <div class="container-fluid">
-            <div class="navbar-content">
-                <!-- Mobile Menu Toggle -->
-                <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
-                <!-- Brand -->
-                <a class="navbar-brand" href="{{ route('home') }}">
-                    <i class="fas fa-hospital"></i> SIPOSYANDU
-                </a>
-                
-                <!-- Desktop User Profile -->
-                <div class="d-none d-lg-block">
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle user-profile" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle"></i> 
-                            <span>{{ auth()->user()->nama }}</span>
-                            <span class="role-badge">{{ strtoupper(auth()->user()->role) }}</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <form action="{{ route('logout') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
+
+@auth
+{{-- ══════════════ NAVBAR ══════════════ --}}
+<nav class="sp-nav">
+    <button class="sp-toggle" id="spToggle" aria-label="Toggle Sidebar">
+        <i class="fas fa-bars" id="spIcon"></i>
+    </button>
+
+    <a href="{{ route('home') }}" class="sp-brand">
+        <span class="bic"><i class="fas fa-heartbeat"></i></span>
+        <span class="brand-text">SIPOSYANDU</span>
+    </a>
+
+    <div class="sp-right">
+        {{-- Bell notifikasi (role: user saja) --}}
+        @if(auth()->user()->role === 'user')
+        <a href="{{ route('user.notifikasi.index') }}" class="sp-bell" title="Notifikasi">
+            <i class="fas fa-bell"></i>
+            <span class="sp-bell-dot" id="notifDot"></span>
+        </a>
+        @endif
+
+        {{-- User Dropdown --}}
+        <div class="sp-drop">
+            <div class="sp-user" role="button" tabindex="0">
+                <div class="sp-av">
+                    {{ strtoupper(substr(auth()->user()->profile?->full_name ?? auth()->user()->name ?? 'U', 0, 1)) }}
                 </div>
+                <span class="sp-uname">
+                    {{ Str::limit(auth()->user()->profile?->full_name ?? auth()->user()->name, 18) }}
+                </span>
+                <span class="sp-role-chip">{{ auth()->user()->role }}</span>
+                <i class="fas fa-chevron-down sp-chevron"></i>
             </div>
-        </div>
-    </nav>
-
-    <!-- Sidebar Overlay (Mobile) -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- Sidebar -->
-    <div class="sidebar-wrapper" id="sidebar">
-        <!-- Mobile User Info -->
-        <div class="mobile-user-info">
-            <div class="user-name">{{ auth()->user()->nama }}</div>
-            <div class="user-role">{{ strtoupper(auth()->user()->role) }}</div>
-        </div>
-        
-        <!-- Sidebar Menu -->
-        <div class="sidebar-menu">
-            @if(auth()->user()->isAdmin())
-                @include('partials.sidebar.admin')
-            @elseif(auth()->user()->isBidan())
-                @include('partials.sidebar.bidan')
-            @elseif(auth()->user()->isKader())
-                @include('partials.sidebar.sidebar-kader')
-            @else
-                @include('partials.sidebar.user')
-            @endif
-            
-            <!-- Mobile Logout -->
-            <div class="d-lg-none mt-3 px-3">
+            <div class="sp-dropmenu">
+                <a href="{{ route('password.change') }}">
+                    <i class="fas fa-key" style="color:var(--t)"></i> Ganti Password
+                </a>
+                <hr class="sp-sep">
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-danger w-100">
-                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    <button type="submit">
+                        <i class="fas fa-sign-out-alt"></i> Keluar
                     </button>
                 </form>
             </div>
         </div>
     </div>
+</nav>
 
-    <!-- Main Content -->
-    <div class="main-content-wrapper page-loading" id="mainContent">
+{{-- ══════════════ SIDEBAR ══════════════ --}}
+<div class="sp-overlay" id="spOverlay"></div>
+<aside class="sp-sidebar" id="spSidebar" role="navigation">
+    @if(auth()->user()->role === 'admin')
+        @include('partials.sidebar.admin')
+    @elseif(auth()->user()->role === 'bidan')
+        @include('partials.sidebar.bidan')
+    @elseif(auth()->user()->role === 'kader')
+        @include('partials.sidebar.sidebar-kader')
+    @else
+        @include('partials.sidebar.user')
+    @endif
+</aside>
+
+{{-- ══════════════ KONTEN UTAMA ══════════════ --}}
+<main class="sp-main" id="spMain">
+    <div class="content-center">
         @yield('content')
     </div>
-    @else
-        @yield('content')
-    @endif
+</main>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <script>
-        // SweetAlert2 Toast Configuration
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer)
-                toast.addEventListener('mouseleave', Swal.resumeTimer)
-            }
-        });
+@else
+    @yield('content')
+@endauth
 
-        // Show flash messages
-        @if(session('success'))
-            Toast.fire({
-                icon: 'success',
-                title: '{{ session('success') }}'
-            });
-        @endif
-        
-        @if(session('error'))
-            Toast.fire({
-                icon: 'error',
-                title: '{{ session('error') }}'
-            });
-        @endif
-        
-        @if(session('warning'))
-            Toast.fire({
-                icon: 'warning',
-                title: '{{ session('warning') }}'
-            });
-        @endif
+{{-- Scripts --}}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-        @if(session('info'))
-            Toast.fire({
-                icon: 'info',
-                title: '{{ session('info') }}'
-            });
-        @endif
+<script>
+// ── Global Toast ──
+const _T = Swal.mixin({
+    toast: true, position: 'top-end',
+    showConfirmButton: false, timer: 3500, timerProgressBar: true,
+    customClass: { popup: 'swal2-toast-custom' }
+});
 
-        // Confirm delete function
-        function confirmDelete(formId) {
-            Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: "Data yang dihapus tidak dapat dikembalikan!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e74c3c',
-                cancelButtonColor: '#95a5a6',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(formId).submit();
-                }
-            });
-        }
+// ── Flash Messages ──
+@if(session('success') && !session('generated_password') && !session('reset_password'))
+    _T.fire({ icon: 'success', title: '{{ addslashes(session("success")) }}' });
+@endif
+@if(session('error'))
+    _T.fire({ icon: 'error', title: '{{ addslashes(session("error")) }}' });
+@endif
+@if(session('warning'))
+    _T.fire({ icon: 'warning', title: '{{ addslashes(session("warning")) }}' });
+@endif
+@if(session('info'))
+    _T.fire({ icon: 'info', title: '{{ addslashes(session("info")) }}' });
+@endif
 
-        // Sidebar Management
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const mobileToggleIcon = mobileMenuToggle.querySelector('i');
-            let isMobile = window.innerWidth <= 992;
+// ── Sidebar Toggle ──
+const _sb  = document.getElementById('spSidebar');
+const _mn  = document.getElementById('spMain');
+const _ov  = document.getElementById('spOverlay');
+const _ic  = document.getElementById('spIcon');
+let   _mob = window.innerWidth <= 992;
 
-            // Initialize sidebar state
-            function initSidebar() {
-                isMobile = window.innerWidth <= 992;
-                
-                if (isMobile) {
-                    // Mobile: sidebar hidden by default
-                    sidebar.classList.remove('hidden-desktop', 'show-mobile');
-                    sidebar.classList.add('hidden-mobile');
-                    mainContent.classList.remove('expanded');
-                } else {
-                    // Desktop: sidebar visible by default
-                    sidebar.classList.remove('hidden-mobile', 'show-mobile');
-                    sidebar.classList.remove('hidden-desktop');
-                    mainContent.classList.remove('expanded');
-                }
-            }
+function _syncMode() {
+    _mob = window.innerWidth <= 992;
+    if (!_mob) {
+        _sb.classList.remove('sb-open');
+        _ov.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
 
-            // Toggle sidebar function
-            function toggleSidebar() {
-                if (isMobile) {
-                    // Mobile toggle
-                    sidebar.classList.toggle('show-mobile');
-                    sidebar.classList.toggle('hidden-mobile');
-                    sidebarOverlay.classList.toggle('show');
-                    
-                    // Toggle hamburger icon
-                    if (mobileToggleIcon.classList.contains('fa-bars')) {
-                        mobileToggleIcon.classList.remove('fa-bars');
-                        mobileToggleIcon.classList.add('fa-times');
-                    } else {
-                        mobileToggleIcon.classList.remove('fa-times');
-                        mobileToggleIcon.classList.add('fa-bars');
-                    }
-                } else {
-                    // Desktop toggle
-                    sidebar.classList.toggle('hidden-desktop');
-                    mainContent.classList.toggle('expanded');
-                    
-                    // Toggle hamburger icon
-                    if (mobileToggleIcon.classList.contains('fa-bars')) {
-                        mobileToggleIcon.classList.remove('fa-bars');
-                        mobileToggleIcon.classList.add('fa-times');
-                    } else {
-                        mobileToggleIcon.classList.remove('fa-times');
-                        mobileToggleIcon.classList.add('fa-bars');
-                    }
-                }
-            }
+document.getElementById('spToggle').addEventListener('click', () => {
+    if (_mob) {
+        const open = _sb.classList.toggle('sb-open');
+        _ov.classList.toggle('show', open);
+        document.body.style.overflow = open ? 'hidden' : '';
+    } else {
+        const collapsed = _sb.classList.toggle('sb-collapsed');
+        _mn.classList.toggle('main-full', collapsed);
+        _ic.className = collapsed ? 'fas fa-bars' : 'fas fa-times';
+    }
+});
 
-            // Close sidebar on mobile
-            function closeMobileSidebar() {
-                if (isMobile) {
-                    sidebar.classList.remove('show-mobile');
-                    sidebar.classList.add('hidden-mobile');
-                    sidebarOverlay.classList.remove('show');
-                    mobileToggleIcon.classList.remove('fa-times');
-                    mobileToggleIcon.classList.add('fa-bars');
-                }
-            }
+_ov.addEventListener('click', () => {
+    _sb.classList.remove('sb-open');
+    _ov.classList.remove('show');
+    document.body.style.overflow = '';
+});
 
-            // Event Listeners
-            mobileMenuToggle.addEventListener('click', toggleSidebar);
-            
-            sidebarOverlay.addEventListener('click', closeMobileSidebar);
-            
-            // Close sidebar when clicking a link (mobile only)
-            const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (isMobile) {
-                        closeMobileSidebar();
-                    }
-                });
-            });
+let _rt;
+window.addEventListener('resize', () => {
+    clearTimeout(_rt);
+    _rt = setTimeout(_syncMode, 150);
+});
+_syncMode();
 
-            // Handle window resize
-            let resizeTimer;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(function() {
-                    const wasMobile = isMobile;
-                    initSidebar();
-                    
-                    // If switching between mobile/desktop, reset icons
-                    if (wasMobile !== isMobile) {
-                        mobileToggleIcon.classList.remove('fa-times');
-                        mobileToggleIcon.classList.add('fa-bars');
-                        sidebarOverlay.classList.remove('show');
-                    }
-                }, 250);
-            });
+// ── Notif Polling (user only) ──
+@if(auth()->check() && auth()->user()->role === 'user')
+(function pollNotif() {
+    fetch('{{ route("user.notifikasi.latest") }}')
+        .then(r => r.json())
+        .then(d => {
+            const dot = document.getElementById('notifDot');
+            if (dot) dot.style.display = (d.unread_count > 0) ? 'block' : 'none';
+        }).catch(() => {});
+    setTimeout(pollNotif, 30000);
+})();
+@endif
+</script>
 
-            // Initialize on load
-            initSidebar();
-            
-            // Prevent body scroll when sidebar is open on mobile
-            function preventBodyScroll(prevent) {
-                if (isMobile && prevent) {
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    document.body.style.overflow = '';
-                }
-            }
-            
-            // Observe sidebar state changes for mobile
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.attributeName === 'class') {
-                        if (sidebar.classList.contains('show-mobile')) {
-                            preventBodyScroll(true);
-                        } else {
-                            preventBodyScroll(false);
-                        }
-                    }
-                });
-            });
-            
-            observer.observe(sidebar, { attributes: true });
-        });
-    </script>
-    
-    @stack('scripts')
+@stack('scripts')
 </body>
 </html>

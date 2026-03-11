@@ -1,246 +1,163 @@
+{{--
+  PATH   : resources/views/admin/users/show.blade.php
+  FUNGSI : Detail warga + data pasien terhubung (balita/remaja/lansia)
+--}}
 @extends('layouts.app')
-
-@section('title', 'Detail User Warga')
+@section('title', 'Detail Warga')
 
 @push('styles')
 <style>
-    .profile-header {
-        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 15px;
-        margin-bottom: 2rem;
-    }
-    
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3rem;
-        font-weight: bold;
-        color: white;
-        margin: 0 auto 1rem;
-        border: 5px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .info-card {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e9ecef;
-    }
-    
-    .info-title {
-        color: #2c3e50;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #3498db;
-    }
-    
-    .info-row {
-        display: flex;
-        margin-bottom: 0.75rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px dashed #eee;
-    }
-    
-    .info-label {
-        flex: 0 0 150px;
-        font-weight: 500;
-        color: #6c757d;
-    }
-    
-    .info-value {
-        flex: 1;
-        color: #2c3e50;
-    }
-    
-    .timeline {
-        position: relative;
-        padding-left: 2rem;
-    }
-    
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 7px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #3498db;
-    }
-    
-    .timeline-item {
-        position: relative;
-        margin-bottom: 1.5rem;
-    }
-    
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -1.25rem;
-        top: 0.25rem;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #3498db;
-        border: 2px solid white;
-    }
+.show-hero { background:linear-gradient(135deg,#0f172a,#0d9488); border-radius:16px; padding:1.5rem; color:#fff; margin-bottom:1.5rem; }
+.big-av { width:64px; height:64px; border-radius:50%; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:800; color:#fff; flex-shrink:0; }
+.info-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; margin-bottom:1.25rem; }
+.info-card-head { padding:.85rem 1.15rem; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:.5rem; }
+.info-card-head h6 { font-size:.85rem; font-weight:800; color:#0f172a; margin:0; }
+.info-card-head i { color:#0d9488; }
+.info-card-body { padding:1rem 1.15rem; }
+.info-row { display:flex; justify-content:space-between; align-items:flex-start; padding:.5rem 0; border-bottom:1px solid #f8fafc; gap:1rem; }
+.info-row:last-child { border-bottom:none; }
+.info-lbl { font-size:.72rem; font-weight:700; color:#64748b; white-space:nowrap; }
+.info-val { font-size:.84rem; font-weight:600; color:#0f172a; text-align:right; }
+.patient-card { border:1.5px solid #e2e8f0; border-radius:12px; padding:.9rem 1rem; margin-bottom:.75rem; display:flex; align-items:center; gap:.75rem; }
+.patient-ic { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:.95rem; color:#fff; flex-shrink:0; }
+.status-aktif { background:#dcfce7; color:#166534; font-size:.67rem; font-weight:800; padding:.15rem .55rem; border-radius:20px; }
+.status-nonaktif { background:#fee2e2; color:#991b1b; font-size:.67rem; font-weight:800; padding:.15rem .55rem; border-radius:20px; }
+.nik-badge { font-family:monospace; font-size:.74rem; font-weight:700; background:#f1f5f9; color:#475569; padding:.18rem .55rem; border-radius:6px; }
 </style>
 @endpush
 
 @section('content')
-<div class="main-content">
-    <!-- Profile Header -->
-    <div class="profile-header">
-        <div class="text-center">
-            <div class="profile-avatar">
-                {{ strtoupper(substr($user->profile->full_name ?? 'U', 0, 1)) }}
+
+<div class="show-hero">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="big-av">
+                {{ strtoupper(substr($user->profile?->full_name ?? $user->name, 0, 1)) }}
             </div>
-            <h2 class="mb-2">{{ $user->profile->full_name }}</h2>
-            <p class="mb-0 opacity-75">
-                <i class="fas fa-id-card me-1"></i>NIK: {{ $user->profile->nik }}
-            </p>
+            <div>
+                <div style="font-size:1.2rem;font-weight:800;line-height:1.2">
+                    {{ $user->profile?->full_name ?? $user->name }}
+                </div>
+                <div style="font-size:.78rem;opacity:.75;margin-top:.2rem">
+                    NIK: {{ $user->nik ?? $user->profile?->nik ?? '-' }} · ID #{{ $user->id }}
+                </div>
+                <span style="font-size:.65rem;font-weight:800;background:rgba(255,255,255,.15);padding:.15rem .55rem;border-radius:20px;margin-top:.3rem;display:inline-block">
+                    {{ $user->status === 'active' ? '✅ Aktif' : '❌ Nonaktif' }}
+                </span>
+            </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn-primary-app" style="font-size:.8rem">
+                <i class="fas fa-pen"></i> Edit
+            </a>
+            <a href="{{ route('admin.users.index') }}" class="btn-secondary-app" style="font-size:.8rem">
+                <i class="fas fa-arrow-left"></i> Kembali
+            </a>
         </div>
     </div>
-    
-    <!-- Action Buttons -->
-    <div class="d-flex justify-content-end mb-4 gap-2">
-        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning">
-            <i class="fas fa-edit me-2"></i>Edit
-        </a>
-        <form action="{{ route('admin.users.reset-password', $user->id) }}" method="POST" style="display: inline;">
-            @csrf
-            <button type="submit" class="btn btn-info text-white" onclick="return confirm('Reset password user ini?')">
-                <i class="fas fa-key me-2"></i>Reset Password
-            </button>
-        </form>
-        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display: inline;">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Yakin menghapus user ini?')">
-                <i class="fas fa-trash me-2"></i>Hapus
-            </button>
-        </form>
-        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Kembali
-        </a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        {{-- Data Akun --}}
+        <div class="info-card">
+            <div class="info-card-head"><i class="fas fa-id-card"></i><h6>Data Identitas</h6></div>
+            <div class="info-card-body">
+                <div class="info-row"><span class="info-lbl">Nama Lengkap</span><span class="info-val">{{ $user->profile?->full_name ?? $user->name }}</span></div>
+                <div class="info-row"><span class="info-lbl">NIK</span><span class="info-val"><span class="nik-badge">{{ $user->nik ?? $user->profile?->nik ?? '-' }}</span></span></div>
+                <div class="info-row"><span class="info-lbl">Jenis Kelamin</span><span class="info-val">{{ $user->profile?->jenis_kelamin == 'L' ? 'Laki-laki' : ($user->profile?->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</span></div>
+                <div class="info-row"><span class="info-lbl">Tempat, Tgl Lahir</span><span class="info-val">{{ $user->profile?->tempat_lahir ?? '-' }}, {{ $user->profile?->tanggal_lahir ? \Carbon\Carbon::parse($user->profile->tanggal_lahir)->format('d M Y') : '-' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Telepon</span><span class="info-val">{{ $user->profile?->telepon ?? '-' }}</span></div>
+                <div class="info-row"><span class="info-lbl">Alamat</span><span class="info-val" style="text-align:right;max-width:220px">{{ $user->profile?->alamat ?? '-' }}</span></div>
+            </div>
+        </div>
+
+        {{-- Info Akun --}}
+        <div class="info-card">
+            <div class="info-card-head"><i class="fas fa-user-cog"></i><h6>Informasi Akun</h6></div>
+            <div class="info-card-body">
+                <div class="info-row"><span class="info-lbl">Login (Username)</span><span class="info-val"><span class="nik-badge">{{ $user->nik ?? '-' }}</span> (NIK)</span></div>
+                <div class="info-row"><span class="info-lbl">Email Sistem</span><span class="info-val" style="font-size:.75rem">{{ $user->email }}</span></div>
+                <div class="info-row"><span class="info-lbl">Status</span><span class="info-val"><span class="status-{{ $user->status === 'active' ? 'aktif' : 'nonaktif' }}">{{ $user->status === 'active' ? 'Aktif' : 'Nonaktif' }}</span></span></div>
+                <div class="info-row"><span class="info-lbl">Bergabung</span><span class="info-val">{{ $user->created_at?->format('d M Y') }}</span></div>
+            </div>
+        </div>
     </div>
-    
-    <div class="row">
-        <!-- Data Pribadi -->
-        <div class="col-md-6">
-            <div class="info-card">
-                <h5 class="info-title"><i class="fas fa-user me-2"></i>Data Pribadi</h5>
-                
-                <div class="info-row">
-                    <div class="info-label">NIK</div>
-                    <div class="info-value">{{ $user->profile->nik ?? '-' }}</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-label">Nama Lengkap</div>
-                    <div class="info-value">{{ $user->profile->full_name ?? '-' }}</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-label">Jenis Kelamin</div>
-                    <div class="info-value">
-                        @if($user->profile->jenis_kelamin == 'L')
-                            Laki-laki
-                        @elseif($user->profile->jenis_kelamin == 'P')
-                            Perempuan
-                        @else
-                            -
-                        @endif
+
+    <div class="col-lg-6">
+        {{-- Data Pasien Terhubung --}}
+        <div class="info-card">
+            <div class="info-card-head"><i class="fas fa-heartbeat"></i><h6>Data Pasien Terhubung</h6></div>
+            <div class="info-card-body">
+
+                {{-- Balita --}}
+                @if($linkedData['balita']->isNotEmpty())
+                    <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:#0e7490;margin-bottom:.5rem">
+                        <i class="fas fa-baby me-1"></i> Balita ({{ $linkedData['balita']->count() }})
                     </div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-label">Tempat/Tgl Lahir</div>
-                    <div class="info-value">
-                        {{ $user->profile->tempat_lahir ?? '-' }} / {{ $user->profile->tanggal_lahir ? \Carbon\Carbon::parse($user->profile->tanggal_lahir)->format('d-m-Y') : '-' }}
-                    </div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-label">Telepon</div>
-                    <div class="info-value">{{ $user->profile->telepon ?? '-' }}</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Alamat -->
-        <div class="col-md-6">
-            <div class="info-card">
-                <h5 class="info-title"><i class="fas fa-home me-2"></i>Alamat</h5>
-                
-                <div class="info-row">
-                    <div class="info-label">Alamat Lengkap</div>
-                    <div class="info-value">{{ $user->profile->alamat ?? '-' }}</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Info Akun -->
-        <div class="col-md-12">
-            <div class="info-card">
-                <h5 class="info-title"><i class="fas fa-user-circle me-2"></i>Informasi Akun</h5>
-                
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="info-row">
-                            <div class="info-label">User ID</div>
-                            <div class="info-value">{{ $user->id }}</div>
+                    @foreach($linkedData['balita'] as $b)
+                    <div class="patient-card">
+                        <div class="patient-ic" style="background:linear-gradient(135deg,#0891b2,#22d3ee)">
+                            <i class="fas fa-baby"></i>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <div class="info-row">
-                            <div class="info-label">Role</div>
-                            <div class="info-value">
-                                <span class="badge bg-primary">{{ strtoupper($user->role) }}</span>
+                        <div>
+                            <div style="font-size:.84rem;font-weight:700;color:#0f172a">{{ $b->nama_lengkap }}</div>
+                            <div style="font-size:.7rem;color:#64748b">
+                                NIK: {{ $b->nik ?? '-' }} ·
+                                {{ $b->jenis_kelamin == 'L' ? 'L' : 'P' }} ·
+                                {{ \Carbon\Carbon::parse($b->tanggal_lahir)->diffForHumans(null, true) }}
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="col-md-3">
-                        <div class="info-row">
-                            <div class="info-label">Status</div>
-                            <div class="info-value">
-                                <span class="badge {{ $user->status == 'active' ? 'bg-success' : 'bg-danger' }}">
-                                    {{ $user->status == 'active' ? 'AKTIF' : 'NONAKTIF' }}
-                                </span>
+                    @endforeach
+                    <div class="mb-2"></div>
+                @endif
+
+                {{-- Remaja --}}
+                @if($linkedData['remaja'])
+                    <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:#5b21b6;margin-bottom:.5rem">
+                        <i class="fas fa-user-graduate me-1"></i> Remaja
+                    </div>
+                    <div class="patient-card">
+                        <div class="patient-ic" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:.84rem;font-weight:700;color:#0f172a">{{ $linkedData['remaja']->nama_lengkap }}</div>
+                            <div style="font-size:.7rem;color:#64748b">
+                                NIK: {{ $linkedData['remaja']->nik ?? '-' }} · Kelas {{ $linkedData['remaja']->kelas ?? '-' }}
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="col-md-3">
-                        <div class="info-row">
-                            <div class="info-label">Login Terakhir</div>
-                            <div class="info-value">
-                                {{ $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->format('d-m-Y H:i') : 'Belum pernah' }}
+                    <div class="mb-2"></div>
+                @endif
+
+                {{-- Lansia --}}
+                @if($linkedData['lansia'])
+                    <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;color:#92400e;margin-bottom:.5rem">
+                        <i class="fas fa-user-clock me-1"></i> Lansia
+                    </div>
+                    <div class="patient-card">
+                        <div class="patient-ic" style="background:linear-gradient(135deg,#d97706,#fbbf24)">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:.84rem;font-weight:700;color:#0f172a">{{ $linkedData['lansia']->nama_lengkap }}</div>
+                            <div style="font-size:.7rem;color:#64748b">
+                                NIK: {{ $linkedData['lansia']->nik ?? '-' }} ·
+                                {{ \Carbon\Carbon::parse($linkedData['lansia']->tanggal_lahir)->age }} tahun
                             </div>
                         </div>
                     </div>
+                @endif
+
+                @if($linkedData['balita']->isEmpty() && !$linkedData['remaja'] && !$linkedData['lansia'])
+                <div class="text-center py-3" style="color:#94a3b8;font-size:.82rem">
+                    <i class="fas fa-unlink d-block mb-2" style="font-size:1.5rem"></i>
+                    Tidak ada data pasien terhubung<br>
+                    <small>NIK warga belum cocok dengan data pasien manapun</small>
                 </div>
-                
-                <div class="info-row">
-                    <div class="info-label">Dibuat Pada</div>
-                    <div class="info-value">{{ $user->created_at->format('d-m-Y H:i') }}</div>
-                </div>
-                
-                <div class="info-row">
-                    <div class="info-label">Diperbarui Pada</div>
-                    <div class="info-value">{{ $user->updated_at->format('d-m-Y H:i') }}</div>
-                </div>
+                @endif
             </div>
         </div>
     </div>

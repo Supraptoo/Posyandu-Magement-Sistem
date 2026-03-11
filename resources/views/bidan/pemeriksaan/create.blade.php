@@ -1,215 +1,187 @@
 @extends('layouts.bidan')
 
-@section('title', 'Input Pemeriksaan')
-@section('page-title', 'Pemeriksaan Pasien')
-@section('page-subtitle', 'Input data pemeriksaan kesehatan warga')
+@section('title', 'Input Pemeriksaan Medis')
+@section('page-name', 'Input Pemeriksaan Baru')
+
+@push('styles')
+<style>
+    .animate-slide-up { opacity: 0; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .custom-radio input:checked + div { border-color: #06b6d4; background-color: #06b6d4; color: white; }
+</style>
+@endpush
 
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-lg-10">
+<div id="smoothLoader" class="fixed inset-0 bg-slate-50/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center transition-all duration-300 opacity-100">
+    <div class="relative w-20 h-20 flex items-center justify-center mb-4">
+        <div class="absolute inset-0 border-4 border-cyan-100 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-cyan-600 rounded-full border-t-transparent animate-spin"></div>
+        <i class="fas fa-heartbeat text-cyan-600 text-2xl animate-pulse"></i>
+    </div>
+    <p class="text-cyan-800 font-extrabold tracking-widest text-sm animate-pulse" id="loaderText">MEMUAT FORMULIR...</p>
+</div>
 
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div class="max-w-5xl mx-auto animate-slide-up">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Pemeriksaan Pasien</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Input data langsung oleh Bidan akan otomatis berstatus Terverifikasi.</p>
+        </div>
+        <a href="{{ route('bidan.pemeriksaan.index') }}" class="smooth-route inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+            <i class="fas fa-arrow-left"></i> Kembali ke Antrian
+        </a>
+    </div>
+
+    <div class="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        
+        <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+            <div class="flex flex-wrap gap-2 p-1 bg-white border border-slate-200 rounded-xl w-full sm:w-max">
+                <a href="?kategori=balita" class="smooth-route flex-1 sm:flex-none text-center px-6 py-2 rounded-lg text-sm font-extrabold transition-colors {{ $kategori == 'balita' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50' }}">
+                    <i class="fas fa-baby mr-1"></i> Balita
+                </a>
+                <a href="?kategori=remaja" class="smooth-route flex-1 sm:flex-none text-center px-6 py-2 rounded-lg text-sm font-extrabold transition-colors {{ $kategori == 'remaja' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50' }}">
+                    <i class="fas fa-user-graduate mr-1"></i> Remaja
+                </a>
+                <a href="?kategori=lansia" class="smooth-route flex-1 sm:flex-none text-center px-6 py-2 rounded-lg text-sm font-extrabold transition-colors {{ $kategori == 'lansia' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50' }}">
+                    <i class="fas fa-wheelchair mr-1"></i> Lansia
+                </a>
             </div>
-        @endif
+        </div>
 
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body p-4">
+        <form id="formPemeriksaan" action="{{ route('bidan.pemeriksaan.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="kategori_pasien" value="{{ $kategori }}">
+            <input type="hidden" name="tanggal_periksa" value="{{ date('Y-m-d') }}">
 
-                {{-- Tab Kategori --}}
-                <ul class="nav nav-pills nav-fill mb-4 p-1 bg-light rounded-pill" id="pills-tab">
-                    <li class="nav-item">
-                        <a class="nav-link rounded-pill {{ $kategori == 'balita' ? 'active bg-primary' : '' }}"
-                           href="?kategori=balita">
-                            <i class="fas fa-baby me-2"></i>Balita
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link rounded-pill {{ $kategori == 'remaja' ? 'active bg-success' : '' }}"
-                           href="?kategori=remaja">
-                            <i class="fas fa-user-graduate me-2"></i>Remaja
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link rounded-pill {{ $kategori == 'lansia' ? 'active bg-warning text-dark' : '' }}"
-                           href="?kategori=lansia">
-                            <i class="fas fa-wheelchair me-2"></i>Lansia
-                        </a>
-                    </li>
-                </ul>
+            <div class="p-6 sm:p-8 space-y-8">
+                
+                <div>
+                    <label class="block text-[11px] font-black text-cyan-600 uppercase tracking-widest mb-3 border-b border-cyan-100 pb-2">1. Identitas Pasien</label>
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <select name="pasien_id" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-xl pl-11 pr-4 py-3.5 outline-none font-semibold focus:border-cyan-500 focus:bg-white transition-colors cursor-pointer appearance-none shadow-inner" required>
+                            <option value="">-- Pilih Nama Pasien (Kategori: {{ ucfirst($kategori) }}) --</option>
+                            @foreach($pasien as $p)
+                                <option value="{{ $p->id }}" {{ old('pasien_id') == $p->id ? 'selected' : '' }}>{{ $p->nama_lengkap }} (NIK: {{ $p->nik }})</option>
+                            @endforeach
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
+                </div>
 
-                <form action="{{ route('bidan.pemeriksaan.store') }}" method="POST">
-                    @csrf
-                    {{-- Wajib: kategori_pasien (bukan kategori) agar sesuai validasi controller --}}
-                    <input type="hidden" name="kategori_pasien" value="{{ $kategori }}">
-                    <input type="hidden" name="tanggal_periksa" value="{{ date('Y-m-d') }}">
-
-                    <div class="row g-4">
-
-                        {{-- Pilih Pasien --}}
-                        <div class="col-12">
-                            <label class="form-label fw-bold text-muted small text-uppercase">
-                                Identitas Pasien
-                            </label>
-                            <select name="pasien_id" class="form-select form-select-lg" required>
-                                <option value="">-- Pilih Nama Pasien {{ ucfirst($kategori) }} --</option>
-                                @foreach($pasien as $p)
-                                    <option value="{{ $p->id }}" {{ old('pasien_id') == $p->id ? 'selected' : '' }}>
-                                        {{ $p->nama_lengkap }} (NIK: {{ $p->nik }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('pasien_id')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
+                <div>
+                    <label class="block text-[11px] font-black text-cyan-600 uppercase tracking-widest mb-3 border-b border-cyan-100 pb-2">2. Pengukuran Fisik</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-2">Berat Badan (kg)</label>
+                            <input type="number" step="0.01" name="berat_badan" value="{{ old('berat_badan') }}" required class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 outline-none font-bold focus:border-cyan-500 transition-colors shadow-sm" placeholder="0.0">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-2">Tinggi Badan (cm)</label>
+                            <input type="number" step="0.01" name="tinggi_badan" value="{{ old('tinggi_badan') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 outline-none font-bold focus:border-cyan-500 transition-colors shadow-sm" placeholder="0.0">
                         </div>
 
-                        <div class="col-12"><hr class="text-muted opacity-25"></div>
-
-                        {{-- Antropometri Dasar --}}
-                        <div class="col-md-6">
-                            <label class="form-label">Berat Badan (kg)</label>
-                            <input type="number" step="0.01" name="berat_badan"
-                                   class="form-control" placeholder="0.0"
-                                   value="{{ old('berat_badan') }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tinggi Badan (cm)</label>
-                            <input type="number" step="0.01" name="tinggi_badan"
-                                   class="form-control" placeholder="0.0"
-                                   value="{{ old('tinggi_badan') }}">
-                        </div>
-
-                        {{-- Field khusus Balita --}}
                         @if($kategori == 'balita')
-                        <div class="col-md-6">
-                            <label class="form-label">Lingkar Kepala (cm)</label>
-                            <input type="number" step="0.01" name="lingkar_kepala"
-                                   class="form-control" value="{{ old('lingkar_kepala') }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Lingkar Lengan (cm)</label>
-                            <input type="number" step="0.01" name="lingkar_lengan"
-                                   class="form-control" value="{{ old('lingkar_lengan') }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Suhu Tubuh (°C)</label>
-                            <input type="number" step="0.1" name="suhu_tubuh"
-                                   class="form-control" placeholder="36.5"
-                                   value="{{ old('suhu_tubuh') }}">
-                        </div>
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Lingkar Kepala (cm)</label><input type="number" step="0.01" name="lingkar_kepala" value="{{ old('lingkar_kepala') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm"></div>
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Lingkar Lengan (cm)</label><input type="number" step="0.01" name="lingkar_lengan" value="{{ old('lingkar_lengan') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm"></div>
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Suhu Tubuh (°C)</label><input type="number" step="0.1" name="suhu_tubuh" value="{{ old('suhu_tubuh') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm" placeholder="36.5"></div>
                         @endif
 
-                        {{-- Field khusus Remaja & Lansia --}}
                         @if($kategori == 'remaja' || $kategori == 'lansia')
-                        <div class="col-md-6">
-                            <label class="form-label">Tekanan Darah (mmHg)</label>
-                            <input type="text" name="tekanan_darah"
-                                   class="form-control" placeholder="120/80"
-                                   value="{{ old('tekanan_darah') }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Gula Darah (mg/dL)</label>
-                            <input type="number" name="gula_darah"
-                                   class="form-control" value="{{ old('gula_darah') }}">
-                        </div>
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Tekanan Darah (mmHg)</label><input type="text" name="tekanan_darah" value="{{ old('tekanan_darah') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm" placeholder="120/80"></div>
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Gula Darah (mg/dL)</label><input type="number" name="gula_darah" value="{{ old('gula_darah') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm"></div>
                         @endif
 
-                        {{-- Field khusus Lansia tambahan --}}
                         @if($kategori == 'lansia')
-                        <div class="col-md-6">
-                            <label class="form-label">Kolesterol (mg/dL)</label>
-                            <input type="number" name="kolesterol"
-                                   class="form-control" value="{{ old('kolesterol') }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Asam Urat (mg/dL)</label>
-                            <input type="number" step="0.01" name="asam_urat"
-                                   class="form-control" value="{{ old('asam_urat') }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Hemoglobin (g/dL)</label>
-                            <input type="number" step="0.01" name="hemoglobin"
-                                   class="form-control" value="{{ old('hemoglobin') }}">
-                        </div>
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Kolesterol (mg/dL)</label><input type="number" name="kolesterol" value="{{ old('kolesterol') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm"></div>
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Asam Urat (mg/dL)</label><input type="number" step="0.01" name="asam_urat" value="{{ old('asam_urat') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm"></div>
                         @endif
+                    </div>
+                </div>
 
-                        <div class="col-12"><hr class="text-muted opacity-25"></div>
-
-                        {{-- Status Kesehatan --}}
-                        <div class="col-12">
-                            <label class="form-label fw-bold">Status Kesehatan / Gizi</label>
-                            <div class="d-flex flex-wrap gap-3">
-                                @if($kategori == 'balita')
-                                    @foreach(['baik' => ['Normal/Baik', 'success'], 'kurang' => ['Gizi Kurang', 'warning'], 'stunting' => ['Stunting', 'danger'], 'buruk' => ['Gizi Buruk', 'danger'], 'obesitas' => ['Obesitas', 'warning']] as $val => $opt)
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="status_gizi"
-                                               value="{{ $val }}" id="gizi_{{ $val }}"
-                                               {{ old('status_gizi', 'baik') == $val ? 'checked' : '' }}>
-                                        <label class="form-check-label text-{{ $opt[1] }} fw-semibold" for="gizi_{{ $val }}">
-                                            {{ $opt[0] }}
-                                        </label>
-                                    </div>
-                                    @endforeach
-                                @else
-                                    @foreach(['baik' => ['Sehat', 'success'], 'risiko' => ['Berisiko', 'warning'], 'buruk' => ['Sakit/Rujuk', 'danger']] as $val => $opt)
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="status_gizi"
-                                               value="{{ $val }}" id="gizi_{{ $val }}"
-                                               {{ old('status_gizi', 'baik') == $val ? 'checked' : '' }}>
-                                        <label class="form-check-label text-{{ $opt[1] }} fw-semibold" for="gizi_{{ $val }}">
-                                            {{ $opt[0] }}
-                                        </label>
-                                    </div>
-                                    @endforeach
-                                @endif
+                <div>
+                    <label class="block text-[11px] font-black text-cyan-600 uppercase tracking-widest mb-3 border-b border-cyan-100 pb-2">3. Diagnosa & Tindakan Bidan</label>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-2">Status Gizi / Kesehatan</label>
+                            <div class="flex flex-wrap gap-3">
+                                @php
+                                    $options = $kategori == 'balita' ? ['baik'=>'Normal','kurang'=>'Kurang','stunting'=>'Stunting','obesitas'=>'Obesitas'] : ['baik'=>'Sehat','risiko'=>'Berisiko','buruk'=>'Sakit/Rujuk'];
+                                @endphp
+                                @foreach($options as $val => $label)
+                                <label class="custom-radio cursor-pointer">
+                                    <input type="radio" name="status_gizi" value="{{ $val }}" class="hidden" {{ old('status_gizi', 'baik') == $val ? 'checked' : '' }}>
+                                    <div class="px-4 py-2 border-2 border-slate-200 rounded-xl text-xs font-bold text-slate-500 transition-all">{{ $label }}</div>
+                                </label>
+                                @endforeach
                             </div>
                         </div>
 
-                        {{-- Keluhan --}}
-                        <div class="col-12">
-                            <label class="form-label">Keluhan Pasien</label>
-                            <input type="text" name="keluhan" class="form-control"
-                                   placeholder="Contoh: demam, pusing, tidak nafsu makan..."
-                                   value="{{ old('keluhan') }}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Keluhan Awal</label><input type="text" name="keluhan" value="{{ old('keluhan') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm" placeholder="Contoh: Batuk, pilek..."></div>
+                            <div><label class="block text-xs font-bold text-slate-600 mb-2">Diagnosa Bidan</label><input type="text" name="hasil_diagnosa" value="{{ old('hasil_diagnosa') }}" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm" placeholder="Kondisi kesehatan pasien..."></div>
                         </div>
 
-                        {{-- Diagnosa (field name: hasil_diagnosa → controller map ke diagnosa) --}}
-                        <div class="col-12">
-                            <label class="form-label">Catatan Medis / Diagnosa</label>
-                            <textarea name="hasil_diagnosa" class="form-control" rows="3"
-                                      placeholder="Contoh: Kondisi umum baik, nafsu makan normal...">{{ old('hasil_diagnosa') }}</textarea>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-2">Tindakan / Resep Medis</label>
+                            <textarea name="tindakan" rows="2" class="w-full bg-white border border-slate-200 text-slate-800 text-sm rounded-xl px-4 py-3 focus:border-cyan-500 shadow-sm" placeholder="Contoh: Berikan Vitamin A, rujuk ke Puskesmas..."></textarea>
                         </div>
-
-                        {{-- Tindakan --}}
-                        <div class="col-12">
-                            <label class="form-label">Tindakan / Resep / Rekomendasi</label>
-                            <textarea name="tindakan" class="form-control" rows="2"
-                                      placeholder="Contoh: Pemberian Vitamin A, Rujukan ke Puskesmas...">{{ old('tindakan') }}</textarea>
-                        </div>
-
                     </div>
-
-                    {{-- Info: data bidan langsung verified --}}
-                    <div class="alert alert-info rounded-3 mt-4 mb-0 d-flex align-items-center gap-2">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="small">Data yang Anda input sebagai Bidan akan otomatis berstatus <strong>Terverifikasi</strong>.</span>
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <a href="{{ route('bidan.pemeriksaan.index') }}" class="btn btn-outline-secondary px-4">
-                            Batal
-                        </a>
-                        <button type="submit" class="btn btn-primary px-5 py-2">
-                            <i class="fas fa-save me-2"></i>Simpan Pemeriksaan
-                        </button>
-                    </div>
-                </form>
+                </div>
 
             </div>
-        </div>
+
+            <div class="px-6 py-5 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+                <button type="submit" id="btnSubmit" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white font-black text-sm rounded-xl hover:from-cyan-600 hover:to-cyan-700 shadow-[0_8px_20px_rgba(8,145,178,0.25)] hover:-translate-y-0.5 transition-all duration-300">
+                    <i class="fas fa-save"></i> <span>Simpan Pemeriksaan</span>
+                </button>
+            </div>
+        </form>
+
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    const showLoader = (text = 'MEMUAT SISTEM...') => {
+        const loader = document.getElementById('smoothLoader');
+        if(loader) {
+            document.getElementById('loaderText').innerText = text;
+            loader.style.display = 'flex';
+            loader.offsetHeight; 
+            loader.classList.remove('opacity-0', 'pointer-events-none');
+            loader.classList.add('opacity-100');
+        }
+    };
+
+    window.addEventListener('pageshow', () => {
+        const loader = document.getElementById('smoothLoader');
+        const btn = document.getElementById('btnSubmit');
+        if(loader) {
+            loader.classList.remove('opacity-100');
+            loader.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => loader.style.display = 'none', 300);
+        }
+        if(btn) {
+            btn.innerHTML = '<i class="fas fa-save"></i> <span>Simpan Pemeriksaan</span>';
+            btn.classList.remove('opacity-75', 'cursor-wait');
+        }
+    });
+
+    document.querySelectorAll('.smooth-route').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if(this.target !== '_blank' && !e.ctrlKey) showLoader('MEMUAT FORMULIR...');
+        });
+    });
+
+    // Cegah layar nge-freeze pas Submit, ganti dengan loading smooth
+    document.getElementById('formPemeriksaan').addEventListener('submit', function() {
+        const btn = document.getElementById('btnSubmit');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Menyimpan...</span>';
+        btn.classList.add('opacity-75', 'cursor-wait');
+        showLoader('MENYIMPAN DATA...');
+    });
+</script>
+@endpush

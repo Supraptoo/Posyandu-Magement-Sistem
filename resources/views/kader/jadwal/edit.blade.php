@@ -1,201 +1,113 @@
 @extends('layouts.kader')
 
-@section('title', 'Edit Jadwal Posyandu')
+@section('title', 'Edit Jadwal')
+@section('page-name', 'Edit Jadwal')
+
+@push('styles')
+<style>
+    .animate-slide-up { opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-size: 0.70rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .form-input {
+        width: 100%; background-color: #f8fafc; border: 2px solid #e2e8f0; color: #0f172a;
+        font-size: 0.875rem; border-radius: 0.75rem; padding: 0.75rem 1rem; outline: none; transition: all 0.3s ease; font-weight: 600; box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.02);
+    }
+    .form-input:focus { background-color: #ffffff; border-color: #f59e0b; box-shadow: 0 4px 12px -3px rgba(245, 158, 11, 0.15); transform: translateY(-1px); }
+</style>
+@endpush
 
 @section('content')
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-edit me-2"></i>Edit Jadwal Posyandu
-        </h1>
-        <div>
-            <a href="{{ route('kader.jadwal.show', $jadwal->id) }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Kembali
-            </a>
+<div class="max-w-4xl mx-auto animate-slide-up">
+    
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 mb-4 shadow-inner">
+            <i class="fas fa-edit text-3xl"></i>
         </div>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Edit Jadwal</h1>
+        <p class="text-slate-500 mt-2 font-medium text-sm max-w-lg mx-auto">Anda dapat memperbarui waktu, lokasi, atau menandai acara ini sebagai Selesai / Batal.</p>
     </div>
 
-    <!-- Form -->
-    <div class="card shadow">
-        <div class="card-header bg-warning text-white">
-            <h6 class="m-0 font-weight-bold">
-                <i class="fas fa-calendar-edit me-2"></i>Form Edit Jadwal
-            </h6>
-        </div>
-        <div class="card-body">
-            <form action="{{ route('kader.jadwal.update', $jadwal->id) }}" method="POST" id="editJadwalForm">
-                @csrf
-                @method('PUT')
-                
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label for="judul" class="form-label">Judul Jadwal *</label>
-                            <input type="text" class="form-control @error('judul') is-invalid @enderror" 
-                                   id="judul" name="judul" 
-                                   value="{{ old('judul', $jadwal->judul) }}" required>
-                            @error('judul')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+    <form action="{{ route('kader.jadwal.update', $jadwal->id) }}" method="POST">
+        @csrf @method('PUT')
+        
+        <div class="bg-white rounded-[24px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col mb-8">
+            
+            <div class="p-6 sm:p-10 border-b border-slate-100">
+                <div class="form-group">
+                    <label class="form-label">Nama / Judul Kegiatan <span class="text-rose-500">*</span></label>
+                    <input type="text" name="judul" value="{{ old('judul', $jadwal->judul) }}" required class="form-input">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6">
+                    <div class="form-group">
+                        <label class="form-label">Target Peserta <span class="text-rose-500">*</span></label>
+                        <select name="target_peserta" required class="form-input">
+                            <option value="semua" {{ $jadwal->target_peserta == 'semua' ? 'selected' : '' }}>Semua Warga</option>
+                            <option value="balita" {{ $jadwal->target_peserta == 'balita' ? 'selected' : '' }}>Balita</option>
+                            <option value="remaja" {{ $jadwal->target_peserta == 'remaja' ? 'selected' : '' }}>Remaja</option>
+                            <option value="lansia" {{ $jadwal->target_peserta == 'lansia' ? 'selected' : '' }}>Lansia</option>
+                        </select>
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="kategori" class="form-label">Kategori *</label>
-                            <select class="form-select @error('kategori') is-invalid @enderror" 
-                                    id="kategori" name="kategori" required>
-                                <option value="">Pilih Kategori</option>
-                                <option value="imunisasi" {{ old('kategori', $jadwal->kategori) == 'imunisasi' ? 'selected' : '' }}>Imunisasi</option>
-                                <option value="pemeriksaan" {{ old('kategori', $jadwal->kategori) == 'pemeriksaan' ? 'selected' : '' }}>Pemeriksaan</option>
-                                <option value="konseling" {{ old('kategori', $jadwal->kategori) == 'konseling' ? 'selected' : '' }}>Konseling</option>
-                                <option value="posyandu" {{ old('kategori', $jadwal->kategori) == 'posyandu' ? 'selected' : '' }}>Posyandu Rutin</option>
-                                <option value="lainnya" {{ old('kategori', $jadwal->kategori) == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                            </select>
-                            @error('kategori')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">Kategori <span class="text-rose-500">*</span></label>
+                        <select name="kategori" required class="form-input">
+                            <option value="posyandu" {{ $jadwal->kategori == 'posyandu' ? 'selected' : '' }}>Posyandu Rutin</option>
+                            <option value="imunisasi" {{ $jadwal->kategori == 'imunisasi' ? 'selected' : '' }}>Imunisasi</option>
+                            <option value="pemeriksaan" {{ $jadwal->kategori == 'pemeriksaan' ? 'selected' : '' }}>Pemeriksaan Lab</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label text-amber-600">Status Acara <span class="text-rose-500">*</span></label>
+                        <select name="status" required class="form-input border-amber-200 bg-amber-50/30">
+                            <option value="aktif" {{ $jadwal->status == 'aktif' ? 'selected' : '' }}>Aktif / Berjalan</option>
+                            <option value="selesai" {{ $jadwal->status == 'selesai' ? 'selected' : '' }}>Sudah Selesai</option>
+                            <option value="dibatalkan" {{ $jadwal->status == 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                        </select>
                     </div>
                 </div>
-                
-                <div class="mb-3">
-                    <label for="deskripsi" class="form-label">Deskripsi *</label>
-                    <textarea class="form-control @error('deskripsi') is-invalid @enderror" 
-                              id="deskripsi" name="deskripsi" rows="3" required>{{ old('deskripsi', $jadwal->deskripsi) }}</textarea>
-                    @error('deskripsi')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="tanggal" class="form-label">Tanggal *</label>
-                            <input type="date" class="form-control @error('tanggal') is-invalid @enderror" 
-                                   id="tanggal" name="tanggal" 
-                                   value="{{ old('tanggal', $jadwal->tanggal) }}" required>
-                            @error('tanggal')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+            </div>
+
+            <div class="p-6 sm:p-10 bg-amber-50/20">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Acara <span class="text-rose-500">*</span></label>
+                        <input type="date" name="tanggal" value="{{ old('tanggal', $jadwal->tanggal) }}" required class="form-input bg-white">
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="waktu_mulai" class="form-label">Waktu Mulai *</label>
-                            <input type="time" class="form-control @error('waktu_mulai') is-invalid @enderror" 
-                                   id="waktu_mulai" name="waktu_mulai" 
-                                   value="{{ old('waktu_mulai', $jadwal->waktu_mulai) }}" required>
-                            @error('waktu_mulai')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">Waktu Mulai <span class="text-rose-500">*</span></label>
+                        <input type="time" name="waktu_mulai" value="{{ old('waktu_mulai', $jadwal->waktu_mulai) }}" required class="form-input bg-white">
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="waktu_selesai" class="form-label">Waktu Selesai *</label>
-                            <input type="time" class="form-control @error('waktu_selesai') is-invalid @enderror" 
-                                   id="waktu_selesai" name="waktu_selesai" 
-                                   value="{{ old('waktu_selesai', $jadwal->waktu_selesai) }}" required>
-                            @error('waktu_selesai')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">Waktu Selesai <span class="text-rose-500">*</span></label>
+                        <input type="time" name="waktu_selesai" value="{{ old('waktu_selesai', $jadwal->waktu_selesai) }}" required class="form-input bg-white">
                     </div>
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label for="lokasi" class="form-label">Lokasi *</label>
-                            <input type="text" class="form-control @error('lokasi') is-invalid @enderror" 
-                                   id="lokasi" name="lokasi" 
-                                   value="{{ old('lokasi', $jadwal->lokasi) }}" required>
-                            @error('lokasi')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label for="target_peserta" class="form-label">Target Peserta *</label>
-                            <select class="form-select @error('target_peserta') is-invalid @enderror" 
-                                    id="target_peserta" name="target_peserta" required>
-                                <option value="">Pilih Target</option>
-                                <option value="semua" {{ old('target_peserta', $jadwal->target_peserta) == 'semua' ? 'selected' : '' }}>Semua</option>
-                                <option value="balita" {{ old('target_peserta', $jadwal->target_peserta) == 'balita' ? 'selected' : '' }}>Balita</option>
-                                <option value="remaja" {{ old('target_peserta', $jadwal->target_peserta) == 'remaja' ? 'selected' : '' }}>Remaja</option>
-                                <option value="lansia" {{ old('target_peserta', $jadwal->target_peserta) == 'lansia' ? 'selected' : '' }}>Lansia</option>
-                                <option value="ibu_hamil" {{ old('target_peserta', $jadwal->target_peserta) == 'ibu_hamil' ? 'selected' : '' }}>Ibu Hamil</option>
-                            </select>
-                            @error('target_peserta')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+
+                <div class="form-group">
+                    <label class="form-label">Lokasi <span class="text-rose-500">*</span></label>
+                    <input type="text" name="lokasi" value="{{ old('lokasi', $jadwal->lokasi) }}" required class="form-input bg-white">
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status *</label>
-                            <select class="form-select @error('status') is-invalid @enderror" 
-                                    id="status" name="status" required>
-                                <option value="aktif" {{ old('status', $jadwal->status) == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                                <option value="selesai" {{ old('status', $jadwal->status) == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                <option value="dibatalkan" {{ old('status', $jadwal->status) == 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
-                            </select>
-                            @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+
+                <div class="form-group mb-0">
+                    <label class="form-label">Deskripsi / Catatan</label>
+                    <textarea name="deskripsi" rows="3" class="form-input bg-white resize-none">{{ old('deskripsi', $jadwal->deskripsi) }}</textarea>
                 </div>
-                
-                <hr>
-                <div class="text-end">
-                    <a href="{{ route('kader.jadwal.show', $jadwal->id) }}" class="btn btn-secondary">
-                        <i class="fas fa-times me-2"></i>Batal
+            </div>
+            
+            <div class="p-6 sm:px-10 sm:py-6 bg-white border-t border-slate-100">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                    <a href="{{ route('kader.jadwal.index') }}" class="w-full py-3.5 bg-slate-100 border border-slate-200 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-times"></i> Batal
                     </a>
-                    <button type="submit" class="btn btn-warning" id="updateBtn">
-                        <i class="fas fa-save me-2"></i>Perbarui Jadwal
+                    <button type="submit" class="w-full py-3.5 bg-amber-500 text-white font-extrabold text-sm rounded-xl hover:bg-amber-600 shadow-[0_4px_12px_rgba(245,158,11,0.3)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> Simpan Perubahan
                     </button>
                 </div>
-            </form>
+            </div>
+            
         </div>
-    </div>
+    </form>
 </div>
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('editJadwalForm');
-    const updateBtn = document.getElementById('updateBtn');
-    
-    // Set min date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('tanggal').min = today;
-    
-    // Validate time
-    form.addEventListener('submit', function(e) {
-        const waktuMulai = document.getElementById('waktu_mulai').value;
-        const waktuSelesai = document.getElementById('waktu_selesai').value;
-        
-        if (waktuMulai && waktuSelesai) {
-            if (waktuMulai >= waktuSelesai) {
-                e.preventDefault();
-                alert('Waktu selesai harus setelah waktu mulai');
-                return false;
-            }
-        }
-        
-        // Disable submit button to prevent double submission
-        updateBtn.disabled = true;
-        updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memperbarui...';
-        
-        return true;
-    });
-});
-</script>
-@endpush
 @endsection
