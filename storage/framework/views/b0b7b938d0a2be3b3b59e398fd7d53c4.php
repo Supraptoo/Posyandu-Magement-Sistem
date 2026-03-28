@@ -1,9 +1,9 @@
-@extends('layouts.kader')
 
-@section('title', 'Upload Data Import')
-@section('page-name', 'Smart Import Wizard')
 
-@push('styles')
+<?php $__env->startSection('title', 'Upload Data Import'); ?>
+<?php $__env->startSection('page-name', 'Smart Import Wizard'); ?>
+
+<?php $__env->startPush('styles'); ?>
 <style>
     .animate-slide-up { opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -25,9 +25,9 @@
     .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
     .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="max-w-5xl mx-auto animate-slide-up">
     
     <div class="text-center mb-10 mt-4">
@@ -38,8 +38,8 @@
         <p class="text-slate-500 mt-3 font-medium text-[14px] max-w-xl mx-auto leading-relaxed">Unggah file Excel/CSV Anda. Sistem akan memproses, memetakan kolom, dan menyimpan ribuan baris data secara otomatis.</p>
     </div>
 
-    <form action="{{ route('kader.import.store') }}" method="POST" enctype="multipart/form-data" id="importForm">
-        @csrf
+    <form action="<?php echo e(route('kader.import.store')); ?>" method="POST" enctype="multipart/form-data" id="importForm">
+        <?php echo csrf_field(); ?>
         
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
             
@@ -53,9 +53,9 @@
                     <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-3">Kategori Database Target <span class="text-rose-500">*</span></label>
                     <select name="jenis_data" id="jenis_data" required class="w-full bg-slate-50 border-2 border-slate-200 text-slate-800 text-[14px] rounded-2xl px-5 py-4 outline-none font-bold focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all cursor-pointer">
                         <option value="">-- Pilih Tujuan Modul --</option>
-                        <option value="balita" {{ old('jenis_data', $type ?? '') == 'balita' ? 'selected' : '' }}>🍼 Modul Data Balita</option>
-                        <option value="remaja" {{ old('jenis_data', $type ?? '') == 'remaja' ? 'selected' : '' }}>🎓 Modul Data Remaja</option>
-                        <option value="lansia" {{ old('jenis_data', $type ?? '') == 'lansia' ? 'selected' : '' }}>👴 Modul Data Lansia</option>
+                        <option value="balita" <?php echo e(old('jenis_data', $type ?? '') == 'balita' ? 'selected' : ''); ?>>🍼 Modul Data Balita</option>
+                        <option value="remaja" <?php echo e(old('jenis_data', $type ?? '') == 'remaja' ? 'selected' : ''); ?>>🎓 Modul Data Remaja</option>
+                        <option value="lansia" <?php echo e(old('jenis_data', $type ?? '') == 'lansia' ? 'selected' : ''); ?>>👴 Modul Data Lansia</option>
                     </select>
                 </div>
 
@@ -121,7 +121,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3 w-full sm:w-auto">
-                <a href="{{ route('kader.import.index') }}" class="w-full sm:w-auto px-6 py-4 bg-slate-100 text-slate-600 font-black text-[13px] rounded-xl hover:bg-slate-200 transition-colors text-center uppercase tracking-widest smooth-route">
+                <a href="<?php echo e(route('kader.import.index')); ?>" class="w-full sm:w-auto px-6 py-4 bg-slate-100 text-slate-600 font-black text-[13px] rounded-xl hover:bg-slate-200 transition-colors text-center uppercase tracking-widest smooth-route">
                     Batal
                 </a>
                 <button type="submit" id="btnProses" class="w-full sm:w-auto px-10 py-4 bg-indigo-600 text-white font-black text-[13px] rounded-xl hover:bg-indigo-700 shadow-[0_8px_20px_rgba(79,70,229,0.3)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
@@ -133,7 +133,7 @@
     </form>
 </div>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
     // Logika Drag & Drop File UI
     const dropArea = document.getElementById('dropArea');
@@ -190,7 +190,7 @@
             document.getElementById('jenis_data').focus();
             return;
         }
-        window.location.href = "{{ route('kader.import.download-template', '') }}/" + jenisData;
+        window.location.href = "<?php echo e(route('kader.import.download-template', '')); ?>/" + jenisData;
     }
 
     // Loading State saat submit
@@ -205,5 +205,6 @@
         btn.classList.add('opacity-75', 'cursor-wait');
     });
 </script>
-@endpush
-@endsection
+<?php $__env->stopPush(); ?>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.kader', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\POSYANDU\posyandu-management-system\resources\views/kader/import/create.blade.php ENDPATH**/ ?>

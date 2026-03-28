@@ -1,9 +1,9 @@
-@extends('layouts.kader')
 
-@section('title', 'Import Data Masal')
-@section('page-name', 'Smart Import Center')
 
-@push('styles')
+<?php $__env->startSection('title', 'Import Data Masal'); ?>
+<?php $__env->startSection('page-name', 'Smart Import Center'); ?>
+
+<?php $__env->startPush('styles'); ?>
 <style>
     .animate-slide-up { opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     .animate-fade-in { opacity: 0; animation: fadeIn 0.8s ease-out forwards; }
@@ -33,9 +33,9 @@
         100% { transform: translate(0, 0) scale(1); }
     }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="max-w-[1200px] mx-auto relative">
     
     <div class="blob-bg bg-indigo-400 w-96 h-96 rounded-full top-0 left-10"></div>
@@ -52,7 +52,7 @@
                     <p class="text-slate-500 font-medium text-[15px] max-w-lg leading-relaxed">Sistem cerdas untuk memindahkan ribuan data Excel atau CSV lama Anda ke dalam platform KaderCare dalam hitungan detik.</p>
                 </div>
             </div>
-            <a href="{{ route('kader.import.history') }}" class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white border border-slate-200 text-slate-700 font-black text-[13px] rounded-2xl hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 shadow-sm transition-all uppercase tracking-widest w-full md:w-auto shrink-0">
+            <a href="<?php echo e(route('kader.import.history')); ?>" class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white border border-slate-200 text-slate-700 font-black text-[13px] rounded-2xl hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 shadow-sm transition-all uppercase tracking-widest w-full md:w-auto shrink-0">
                 <i class="fas fa-history text-lg"></i> Riwayat Migrasi
             </a>
         </div>
@@ -67,10 +67,10 @@
                 <h3 class="text-2xl font-black text-slate-800 mb-2 font-poppins">Data Balita</h3>
                 <p class="text-[13px] font-medium text-slate-500 mb-8 leading-relaxed">Impor data anak, riwayat lahir, dan relasikan NIK Ibu agar terhubung dengan Web Warga otomatis.</p>
                 <div class="flex flex-col gap-3">
-                    <a href="{{ route('kader.import.create') }}?type=balita" class="w-full py-3.5 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-[13px] font-black flex items-center justify-center gap-2 transition-colors shadow-[0_4px_15px_rgba(225,29,72,0.3)] uppercase tracking-wider">
+                    <a href="<?php echo e(route('kader.import.create')); ?>?type=balita" class="w-full py-3.5 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-[13px] font-black flex items-center justify-center gap-2 transition-colors shadow-[0_4px_15px_rgba(225,29,72,0.3)] uppercase tracking-wider">
                         <i class="fas fa-cloud-upload-alt"></i> Upload Berkas
                     </a>
-                    <a href="{{ route('kader.import.download-template', 'balita') }}" class="w-full py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-colors">
+                    <a href="<?php echo e(route('kader.import.download-template', 'balita')); ?>" class="w-full py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-colors">
                         <i class="fas fa-download"></i> Unduh Format CSV
                     </a>
                 </div>
@@ -84,10 +84,10 @@
                 <h3 class="text-2xl font-black text-slate-800 mb-2 font-poppins">Data Remaja</h3>
                 <p class="text-[13px] font-medium text-slate-500 mb-8 leading-relaxed">Impor data pemantauan kesehatan remaja, pendidikan, dan deteksi dini masalah kesehatan.</p>
                 <div class="flex flex-col gap-3">
-                    <a href="{{ route('kader.import.create') }}?type=remaja" class="w-full py-3.5 bg-sky-600 text-white hover:bg-sky-700 rounded-xl text-[13px] font-black flex items-center justify-center gap-2 transition-colors shadow-[0_4px_15px_rgba(2,132,199,0.3)] uppercase tracking-wider">
+                    <a href="<?php echo e(route('kader.import.create')); ?>?type=remaja" class="w-full py-3.5 bg-sky-600 text-white hover:bg-sky-700 rounded-xl text-[13px] font-black flex items-center justify-center gap-2 transition-colors shadow-[0_4px_15px_rgba(2,132,199,0.3)] uppercase tracking-wider">
                         <i class="fas fa-cloud-upload-alt"></i> Upload Berkas
                     </a>
-                    <a href="{{ route('kader.import.download-template', 'remaja') }}" class="w-full py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-colors">
+                    <a href="<?php echo e(route('kader.import.download-template', 'remaja')); ?>" class="w-full py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-colors">
                         <i class="fas fa-download"></i> Unduh Format CSV
                     </a>
                 </div>
@@ -101,10 +101,10 @@
                 <h3 class="text-2xl font-black text-slate-800 mb-2 font-poppins">Data Lansia</h3>
                 <p class="text-[13px] font-medium text-slate-500 mb-8 leading-relaxed">Migrasi data lansia manula untuk pemantauan hipertensi, diabetes, dan cek kesehatan berkala.</p>
                 <div class="flex flex-col gap-3">
-                    <a href="{{ route('kader.import.create') }}?type=lansia" class="w-full py-3.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl text-[13px] font-black flex items-center justify-center gap-2 transition-colors shadow-[0_4px_15px_rgba(5,150,105,0.3)] uppercase tracking-wider">
+                    <a href="<?php echo e(route('kader.import.create')); ?>?type=lansia" class="w-full py-3.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl text-[13px] font-black flex items-center justify-center gap-2 transition-colors shadow-[0_4px_15px_rgba(5,150,105,0.3)] uppercase tracking-wider">
                         <i class="fas fa-cloud-upload-alt"></i> Upload Berkas
                     </a>
-                    <a href="{{ route('kader.import.download-template', 'lansia') }}" class="w-full py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-colors">
+                    <a href="<?php echo e(route('kader.import.download-template', 'lansia')); ?>" class="w-full py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-colors">
                         <i class="fas fa-download"></i> Unduh Format CSV
                     </a>
                 </div>
@@ -168,4 +168,5 @@
 
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.kader', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\POSYANDU\posyandu-management-system\resources\views/kader/import/index.blade.php ENDPATH**/ ?>

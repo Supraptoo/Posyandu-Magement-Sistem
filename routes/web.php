@@ -94,6 +94,7 @@ Route::prefix('bidan')->name('bidan.')->middleware(['auth','checkstatus','role:b
     Route::post('/pemeriksaan',            [BidanPemeriksaan::class, 'store'])->name('pemeriksaan.store');
     Route::get('/pemeriksaan/{id}',        [BidanPemeriksaan::class, 'show'])->name('pemeriksaan.show');
     Route::put('/pemeriksaan/{id}/verifikasi', [BidanPemeriksaan::class, 'verifikasi'])->name('pemeriksaan.verifikasi');
+    Route::delete('/pemeriksaan/{id}',     [BidanPemeriksaan::class, 'destroy'])->name('pemeriksaan.destroy');
 
     Route::resource('jadwal', BidanJadwal::class);
 
@@ -106,6 +107,8 @@ Route::prefix('bidan')->name('bidan.')->middleware(['auth','checkstatus','role:b
     Route::post('/imunisasi', [\App\Http\Controllers\Bidan\ImunisasiController::class, 'store'])->name('imunisasi.store');
     Route::get('/imunisasi/{id}', [\App\Http\Controllers\Bidan\ImunisasiController::class, 'show'])->name('imunisasi.show');
     Route::delete('/imunisasi/{id}', [\App\Http\Controllers\Bidan\ImunisasiController::class, 'destroy'])->name('imunisasi.destroy');
+    Route::get('/imunisasi/{id}/edit', [\App\Http\Controllers\Bidan\ImunisasiController::class, 'edit'])->name('imunisasi.edit');
+    Route::put('/imunisasi/{id}', [\App\Http\Controllers\Bidan\ImunisasiController::class, 'update'])->name('imunisasi.update');
 
     Route::get('/rekam-medis', [BidanRekamMedisController::class, 'index'])->name('rekam-medis.index');
     Route::get('/rekam-medis/{pasien_type}/{pasien_id}', [BidanRekamMedisController::class, 'show'])->name('rekam-medis.show');

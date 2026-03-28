@@ -1,49 +1,41 @@
 <?php 
-    // MENGGUNAKAN VARIABEL (Sangat Aman & Anti Error 'Cannot Redeclare')
-    $activeClass = 'bg-indigo-50 text-indigo-700 font-bold';
-    $inactiveClass = 'text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800';
+    $activeClass = 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_8px_16px_rgba(79,70,229,0.25)] transform scale-[1.02] transition-all';
+    $inactiveClass = 'text-slate-500 hover:bg-slate-50 hover:text-indigo-700 transition-all border border-transparent hover:border-slate-100';
     
-    $activeIconClass = 'text-indigo-600';
-    $inactiveIconClass = 'text-slate-400 group-hover:text-slate-500';
+    $activeIconClass = 'text-white';
+    $inactiveIconClass = 'text-slate-400 group-hover:text-indigo-500';
 
-    // Helper penanda menu dropdown aktif
     $isDataWargaActive = request()->routeIs('kader.data.*');
     $isLaporanActive = request()->routeIs('kader.laporan.*');
 ?>
 
-<div class="space-y-6 pb-10">
+<div class="space-y-7 pb-10">
 
     <div>
-        <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-sans">Overview</p>
-        <a href="<?php echo e(route('kader.dashboard')); ?>" class="smooth-route group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-colors <?php echo e(request()->routeIs('kader.dashboard') ? $activeClass : $inactiveClass); ?>">
-            <i class="fas fa-th-large w-5 text-center text-[18px] transition-colors <?php echo e(request()->routeIs('kader.dashboard') ? $activeIconClass : $inactiveIconClass); ?>"></i>
-            <span>Dashboard</span>
+        <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Overview</p>
+        <a href="<?php echo e(route('kader.dashboard')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] <?php echo e(request()->routeIs('kader.dashboard') ? $activeClass : $inactiveClass); ?>">
+            <i class="fas fa-th-large w-6 text-center text-[16px] transition-colors <?php echo e(request()->routeIs('kader.dashboard') ? $activeIconClass : $inactiveIconClass); ?>"></i>
+            <span class="font-poppins tracking-wide">Dashboard Utama</span>
         </a>
     </div>
 
     <div>
-        <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-sans">Data Warga</p>
-        <div class="space-y-1">
-            <button onclick="toggleSubmenu('menuPasien', 'iconPasien')" class="w-full group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-300 text-[14px] <?php echo e($isDataWargaActive ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800'); ?>">
+        <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Data Warga</p>
+        <div class="space-y-2">
+            <button onclick="toggleSubmenu('menuPasien', 'iconPasien')" class="w-full group flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-[13px] border border-transparent <?php echo e($isDataWargaActive ? 'bg-indigo-50/80 text-indigo-700 border-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-700 hover:border-slate-100'); ?>">
                 <div class="flex items-center gap-3">
-                    <i class="fas fa-users w-5 text-center text-[18px] transition-colors <?php echo e($isDataWargaActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-500'); ?>"></i>
-                    <span>Database Pasien</span>
+                    <i class="fas fa-users-viewfinder w-6 text-center text-[16px] transition-colors <?php echo e($isDataWargaActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-500'); ?>"></i>
+                    <span class="font-poppins tracking-wide">Database Pasien</span>
                 </div>
-                <i id="iconPasien" class="fas fa-chevron-down text-[12px] transition-transform duration-300 <?php echo e($isDataWargaActive ? 'rotate-180 text-indigo-600' : 'text-slate-400'); ?>"></i>
+                <i id="iconPasien" class="fas fa-chevron-down text-[10px] transition-transform duration-300 <?php echo e($isDataWargaActive ? 'rotate-180 text-indigo-600' : 'text-slate-400'); ?>"></i>
             </button>
             
             <div id="menuPasien" class="grid transition-all duration-300 ease-in-out <?php echo e($isDataWargaActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'); ?>">
                 <div class="overflow-hidden">
-                    <div class="pl-11 pr-2 py-1 space-y-1 mt-1">
-                        <a href="<?php echo e(route('kader.data.balita.index')); ?>" class="smooth-route flex items-center gap-3 py-2 text-[13px] rounded-lg transition-colors <?php echo e(request()->routeIs('kader.data.balita*') ? 'text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-800'); ?>">
-                            <span class="w-1.5 h-1.5 rounded-full shrink-0 <?php echo e(request()->routeIs('kader.data.balita*') ? 'bg-indigo-600' : 'bg-slate-300'); ?>"></span> Balita
-                        </a>
-                        <a href="<?php echo e(route('kader.data.remaja.index')); ?>" class="smooth-route flex items-center gap-3 py-2 text-[13px] rounded-lg transition-colors <?php echo e(request()->routeIs('kader.data.remaja*') ? 'text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-800'); ?>">
-                            <span class="w-1.5 h-1.5 rounded-full shrink-0 <?php echo e(request()->routeIs('kader.data.remaja*') ? 'bg-indigo-600' : 'bg-slate-300'); ?>"></span> Remaja
-                        </a>
-                        <a href="<?php echo e(route('kader.data.lansia.index')); ?>" class="smooth-route flex items-center gap-3 py-2 text-[13px] rounded-lg transition-colors <?php echo e(request()->routeIs('kader.data.lansia*') ? 'text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-800'); ?>">
-                            <span class="w-1.5 h-1.5 rounded-full shrink-0 <?php echo e(request()->routeIs('kader.data.lansia*') ? 'bg-indigo-600' : 'bg-slate-300'); ?>"></span> Lansia
-                        </a>
+                    <div class="pl-12 pr-2 py-2 space-y-1.5 relative before:absolute before:left-7 before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
+                        <a href="<?php echo e(route('kader.data.balita.index')); ?>" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('kader.data.balita*') ? 'text-indigo-700 bg-white shadow-sm border border-indigo-100 before:bg-indigo-500 before:ring-4 before:ring-indigo-50' : 'text-slate-500 hover:text-indigo-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Data Balita</a>
+                        <a href="<?php echo e(route('kader.data.remaja.index')); ?>" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('kader.data.remaja*') ? 'text-indigo-700 bg-white shadow-sm border border-indigo-100 before:bg-indigo-500 before:ring-4 before:ring-indigo-50' : 'text-slate-500 hover:text-indigo-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Data Remaja</a>
+                        <a href="<?php echo e(route('kader.data.lansia.index')); ?>" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('kader.data.lansia*') ? 'text-indigo-700 bg-white shadow-sm border border-indigo-100 before:bg-indigo-500 before:ring-4 before:ring-indigo-50' : 'text-slate-500 hover:text-indigo-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Data Lansia</a>
                     </div>
                 </div>
             </div>
@@ -51,56 +43,53 @@
     </div>
 
     <div>
-        <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-sans">Layanan Medis</p>
-        <div class="space-y-1">
-            <a href="<?php echo e(route('kader.pemeriksaan.index')); ?>" class="smooth-route group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-colors <?php echo e(request()->routeIs('kader.pemeriksaan*') ? $activeClass : $inactiveClass); ?>">
-                <i class="fas fa-stethoscope w-5 text-center text-[18px] transition-colors <?php echo e(request()->routeIs('kader.pemeriksaan*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
-                <span>Pemeriksaan</span>
+        <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Layanan Medis</p>
+        <div class="space-y-2">
+            <a href="<?php echo e(route('kader.pemeriksaan.index')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] <?php echo e(request()->routeIs('kader.pemeriksaan*') ? $activeClass : $inactiveClass); ?>">
+                <i class="fas fa-stethoscope w-6 text-center text-[16px] transition-colors <?php echo e(request()->routeIs('kader.pemeriksaan*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
+                <span class="font-poppins tracking-wide">Pemeriksaan Medis</span>
             </a>
             
-            <a href="<?php echo e(route('kader.imunisasi.index')); ?>" class="smooth-route group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-colors <?php echo e(request()->routeIs('kader.imunisasi*') ? $activeClass : $inactiveClass); ?>">
-                <i class="fas fa-syringe w-5 text-center text-[18px] transition-colors <?php echo e(request()->routeIs('kader.imunisasi*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
-                <span>Imunisasi</span>
+            <a href="<?php echo e(route('kader.imunisasi.index')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] <?php echo e(request()->routeIs('kader.imunisasi*') ? $activeClass : $inactiveClass); ?>">
+                <i class="fas fa-syringe w-6 text-center text-[16px] transition-colors <?php echo e(request()->routeIs('kader.imunisasi*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
+                <span class="font-poppins tracking-wide">Imunisasi Vaksin</span>
             </a>
             
-            <a href="<?php echo e(route('kader.kunjungan.index')); ?>" class="smooth-route group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-colors <?php echo e(request()->routeIs('kader.kunjungan*') ? $activeClass : $inactiveClass); ?>">
-                <i class="fas fa-clipboard-list w-5 text-center text-[18px] transition-colors <?php echo e(request()->routeIs('kader.kunjungan*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
-                <span>Buku Tamu</span>
+            <a href="<?php echo e(route('kader.kunjungan.index')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] <?php echo e(request()->routeIs('kader.kunjungan*') ? $activeClass : $inactiveClass); ?>">
+                <i class="fas fa-clipboard-list w-6 text-center text-[16px] transition-colors <?php echo e(request()->routeIs('kader.kunjungan*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
+                <span class="font-poppins tracking-wide">Buku Tamu / Antrian</span>
             </a>
         </div>
     </div>
 
     <div>
-        <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-sans">Manajemen</p>
-        <div class="space-y-1">
-            <a href="<?php echo e(route('kader.jadwal.index')); ?>" class="smooth-route group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-colors <?php echo e(request()->routeIs('kader.jadwal*') ? $activeClass : $inactiveClass); ?>">
-                <i class="fas fa-calendar-alt w-5 text-center text-[18px] transition-colors <?php echo e(request()->routeIs('kader.jadwal*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
-                <span>Jadwal Posyandu</span>
+        <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Manajemen & Sistem</p>
+        <div class="space-y-2">
+            <a href="<?php echo e(route('kader.jadwal.index')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] <?php echo e(request()->routeIs('kader.jadwal*') ? $activeClass : $inactiveClass); ?>">
+                <i class="fas fa-calendar-alt w-6 text-center text-[16px] transition-colors <?php echo e(request()->routeIs('kader.jadwal*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
+                <span class="font-poppins tracking-wide">Jadwal Posyandu</span>
             </a>
 
-            <button onclick="toggleSubmenu('menuLaporan', 'iconLaporan')" class="w-full group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-300 text-[14px] <?php echo e($isLaporanActive ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-800'); ?>">
+            <a href="<?php echo e(route('kader.import.index')); ?>" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] <?php echo e(request()->routeIs('kader.import*') ? $activeClass : $inactiveClass); ?>">
+                <i class="fas fa-file-import w-6 text-center text-[16px] transition-colors <?php echo e(request()->routeIs('kader.import*') ? $activeIconClass : $inactiveIconClass); ?>"></i>
+                <span class="font-poppins tracking-wide">Import Data Masal</span>
+            </a>
+
+            <button onclick="toggleSubmenu('menuLaporan', 'iconLaporan')" class="w-full group flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-[13px] border border-transparent <?php echo e($isLaporanActive ? 'bg-indigo-50/80 text-indigo-700 border-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-700 hover:border-slate-100'); ?>">
                 <div class="flex items-center gap-3">
-                    <i class="fas fa-file-contract w-5 text-center text-[18px] transition-colors <?php echo e($isLaporanActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-500'); ?>"></i>
-                    <span>Laporan Data</span>
+                    <i class="fas fa-file-contract w-6 text-center text-[16px] transition-colors <?php echo e($isLaporanActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-500'); ?>"></i>
+                    <span class="font-poppins tracking-wide">Laporan Cetak PDF</span>
                 </div>
-                <i id="iconLaporan" class="fas fa-chevron-down text-[12px] transition-transform duration-300 <?php echo e($isLaporanActive ? 'rotate-180 text-indigo-600' : 'text-slate-400'); ?>"></i>
+                <i id="iconLaporan" class="fas fa-chevron-down text-[10px] transition-transform duration-300 <?php echo e($isLaporanActive ? 'rotate-180 text-indigo-600' : 'text-slate-400'); ?>"></i>
             </button>
             
             <div id="menuLaporan" class="grid transition-all duration-300 ease-in-out <?php echo e($isLaporanActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'); ?>">
                 <div class="overflow-hidden">
-                    <div class="pl-11 pr-2 py-1 space-y-1 mt-1">
-                        <a href="<?php echo e(route('kader.laporan.index')); ?>" class="smooth-route flex items-center gap-3 py-2 text-[13px] rounded-lg transition-colors <?php echo e(request()->routeIs('kader.laporan.index') ? 'text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-800'); ?>">
-                            <span class="w-1.5 h-1.5 rounded-full shrink-0 <?php echo e(request()->routeIs('kader.laporan.index') ? 'bg-indigo-600' : 'bg-slate-300'); ?>"></span> Rekap Laporan
-                        </a>
-                        <a href="<?php echo e(route('kader.laporan.balita')); ?>" class="smooth-route flex items-center gap-3 py-2 text-[13px] rounded-lg transition-colors <?php echo e(request()->routeIs('kader.laporan.balita') ? 'text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-800'); ?>">
-                            <span class="w-1.5 h-1.5 rounded-full shrink-0 <?php echo e(request()->routeIs('kader.laporan.balita') ? 'bg-indigo-600' : 'bg-slate-300'); ?>"></span> Balita
-                        </a>
-                        <a href="<?php echo e(route('kader.laporan.remaja')); ?>" class="smooth-route flex items-center gap-3 py-2 text-[13px] rounded-lg transition-colors <?php echo e(request()->routeIs('kader.laporan.remaja') ? 'text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-800'); ?>">
-                            <span class="w-1.5 h-1.5 rounded-full shrink-0 <?php echo e(request()->routeIs('kader.laporan.remaja') ? 'bg-indigo-600' : 'bg-slate-300'); ?>"></span> Remaja
-                        </a>
-                        <a href="<?php echo e(route('kader.laporan.lansia')); ?>" class="smooth-route flex items-center gap-3 py-2 text-[13px] rounded-lg transition-colors <?php echo e(request()->routeIs('kader.laporan.lansia') ? 'text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-800'); ?>">
-                            <span class="w-1.5 h-1.5 rounded-full shrink-0 <?php echo e(request()->routeIs('kader.laporan.lansia') ? 'bg-indigo-600' : 'bg-slate-300'); ?>"></span> Lansia
-                        </a>
+                    <div class="pl-12 pr-2 py-2 space-y-1.5 relative before:absolute before:left-7 before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
+                        <a href="<?php echo e(route('kader.laporan.index')); ?>" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('kader.laporan.index') ? 'text-indigo-700 bg-white shadow-sm border border-indigo-100 before:bg-indigo-500 before:ring-4 before:ring-indigo-50' : 'text-slate-500 hover:text-indigo-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Rekap Keseluruhan</a>
+                        <a href="<?php echo e(route('kader.laporan.balita')); ?>" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('kader.laporan.balita') ? 'text-indigo-700 bg-white shadow-sm border border-indigo-100 before:bg-indigo-500 before:ring-4 before:ring-indigo-50' : 'text-slate-500 hover:text-indigo-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Laporan Balita</a>
+                        <a href="<?php echo e(route('kader.laporan.remaja')); ?>" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('kader.laporan.remaja') ? 'text-indigo-700 bg-white shadow-sm border border-indigo-100 before:bg-indigo-500 before:ring-4 before:ring-indigo-50' : 'text-slate-500 hover:text-indigo-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Laporan Remaja</a>
+                        <a href="<?php echo e(route('kader.laporan.lansia')); ?>" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full <?php echo e(request()->routeIs('kader.laporan.lansia') ? 'text-indigo-700 bg-white shadow-sm border border-indigo-100 before:bg-indigo-500 before:ring-4 before:ring-indigo-50' : 'text-slate-500 hover:text-indigo-700 hover:bg-slate-50 before:bg-slate-300'); ?>">Laporan Lansia</a>
                     </div>
                 </div>
             </div>

@@ -1,18 +1,18 @@
-@extends('layouts.bidan')
 
-@section('title', 'Data Pasien Balita')
-@section('page-name', 'Pantau Data Balita')
 
-@push('styles')
+<?php $__env->startSection('title', 'Data Pasien Balita'); ?>
+<?php $__env->startSection('page-name', 'Pantau Data Balita'); ?>
+
+<?php $__env->startPush('styles'); ?>
 <style>
     .animate-slide-up { opacity: 0; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes slideUpFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div id="smoothLoader" class="fixed inset-0 bg-slate-50/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
     <div class="relative w-20 h-20 flex items-center justify-center mb-4">
         <div class="absolute inset-0 border-4 border-rose-100 rounded-full"></div>
@@ -38,7 +38,7 @@
             </div>
         </div>
         
-        <a href="{{ route('bidan.laporan.cetak', ['jenis' => 'balita']) }}" target="_blank" class="relative z-10 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-rose-600 font-extrabold text-[13px] rounded-xl hover:bg-rose-50 shadow-[0_8px_20px_rgba(225,29,72,0.3)] transition-all hover:-translate-y-0.5">
+        <a href="<?php echo e(route('bidan.laporan.cetak', ['jenis' => 'balita'])); ?>" target="_blank" class="relative z-10 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-rose-600 font-extrabold text-[13px] rounded-xl hover:bg-rose-50 shadow-[0_8px_20px_rgba(225,29,72,0.3)] transition-all hover:-translate-y-0.5">
             <i class="fas fa-print"></i> Cetak Laporan
         </a>
     </div>
@@ -46,16 +46,16 @@
     <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.03)] overflow-hidden">
         
         <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-            <form id="filterForm" action="{{ route('bidan.pasien.balita') }}" method="GET" class="flex flex-col md:flex-row gap-3">
+            <form id="filterForm" action="<?php echo e(route('bidan.pasien.balita')); ?>" method="GET" class="flex flex-col md:flex-row gap-3">
                 <div class="w-full relative flex-1">
                     <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama balita, NIK, atau nama ibu (Tekan Enter)..." class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-[13px] font-medium focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-none transition-all shadow-sm">
+                    <input type="text" name="search" value="<?php echo e(request('search')); ?>" placeholder="Cari nama balita, NIK, atau nama ibu (Tekan Enter)..." class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-[13px] font-medium focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-none transition-all shadow-sm">
                 </div>
-                @if(request('search'))
-                    <a href="{{ route('bidan.pasien.balita') }}" class="smooth-route flex items-center justify-center px-6 py-3.5 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-colors font-bold text-[13px]">
+                <?php if(request('search')): ?>
+                    <a href="<?php echo e(route('bidan.pasien.balita')); ?>" class="smooth-route flex items-center justify-center px-6 py-3.5 bg-slate-100 text-slate-600 rounded-2xl hover:bg-slate-200 transition-colors font-bold text-[13px]">
                         <i class="fas fa-times mr-2"></i> Reset
                     </a>
-                @endif
+                <?php endif; ?>
             </form>
         </div>
 
@@ -71,39 +71,39 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                    @forelse($balitas as $balita)
+                    <?php $__empty_1 = true; $__currentLoopData = $balitas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $balita): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr class="hover:bg-rose-50/30 transition-colors group">
                         
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center border border-rose-200 shrink-0"><i class="fas fa-baby"></i></div>
                                 <div>
-                                    <p class="font-black text-slate-800 text-[14px] mb-0.5">{{ $balita->nama_lengkap }}</p>
-                                    <p class="text-[11px] font-bold text-slate-400">Usia: <span class="text-rose-500">{{ \Carbon\Carbon::parse($balita->tanggal_lahir)->age }} Thn</span></p>
+                                    <p class="font-black text-slate-800 text-[14px] mb-0.5"><?php echo e($balita->nama_lengkap); ?></p>
+                                    <p class="text-[11px] font-bold text-slate-400">Usia: <span class="text-rose-500"><?php echo e(\Carbon\Carbon::parse($balita->tanggal_lahir)->age); ?> Thn</span></p>
                                 </div>
                             </div>
                         </td>
 
                         <td class="px-6 py-4">
-                            <p class="font-bold text-slate-700 text-[12px] mb-0.5"><i class="fas fa-female text-slate-300 mr-1"></i> {{ $balita->nama_ibu ?? '-' }}</p>
-                            <p class="font-bold text-slate-700 text-[12px]"><i class="fas fa-male text-slate-300 mr-1"></i> {{ $balita->nama_ayah ?? '-' }}</p>
+                            <p class="font-bold text-slate-700 text-[12px] mb-0.5"><i class="fas fa-female text-slate-300 mr-1"></i> <?php echo e($balita->nama_ibu ?? '-'); ?></p>
+                            <p class="font-bold text-slate-700 text-[12px]"><i class="fas fa-male text-slate-300 mr-1"></i> <?php echo e($balita->nama_ayah ?? '-'); ?></p>
                         </td>
 
                         <td class="px-6 py-4">
-                            @if($balita->pemeriksaan_terakhir)
-                                <p class="font-bold text-slate-800 text-[12px] mb-1.5">{{ \Carbon\Carbon::parse($balita->pemeriksaan_terakhir->tanggal_periksa)->format('d M Y') }}</p>
+                            <?php if($balita->pemeriksaan_terakhir): ?>
+                                <p class="font-bold text-slate-800 text-[12px] mb-1.5"><?php echo e(\Carbon\Carbon::parse($balita->pemeriksaan_terakhir->tanggal_periksa)->format('d M Y')); ?></p>
                                 <div class="flex flex-wrap gap-2 text-[10px] font-black text-rose-700">
-                                    <span class="bg-rose-50 px-2.5 py-1 rounded-md border border-rose-100 shadow-sm">BB: {{ $balita->pemeriksaan_terakhir->berat_badan }}kg</span>
-                                    <span class="bg-rose-50 px-2.5 py-1 rounded-md border border-rose-100 shadow-sm">TB: {{ $balita->pemeriksaan_terakhir->tinggi_badan }}cm</span>
+                                    <span class="bg-rose-50 px-2.5 py-1 rounded-md border border-rose-100 shadow-sm">BB: <?php echo e($balita->pemeriksaan_terakhir->berat_badan); ?>kg</span>
+                                    <span class="bg-rose-50 px-2.5 py-1 rounded-md border border-rose-100 shadow-sm">TB: <?php echo e($balita->pemeriksaan_terakhir->tinggi_badan); ?>cm</span>
                                 </div>
-                            @else
+                            <?php else: ?>
                                 <span class="text-[11px] text-slate-400 font-bold italic border border-slate-200 px-3 py-1 rounded-lg bg-slate-50">Belum ada riwayat</span>
-                            @endif
+                            <?php endif; ?>
                         </td>
 
                         <td class="px-6 py-4 text-center">
-                            @if($balita->pemeriksaan_terakhir && $balita->pemeriksaan_terakhir->status_gizi)
-                                @php
+                            <?php if($balita->pemeriksaan_terakhir && $balita->pemeriksaan_terakhir->status_gizi): ?>
+                                <?php
                                     $gizi = strtolower($balita->pemeriksaan_terakhir->status_gizi);
                                     $badge = match(true) {
                                         str_contains($gizi, 'baik') || str_contains($gizi, 'normal') => 'bg-emerald-50 text-emerald-600 border-emerald-200',
@@ -111,23 +111,24 @@
                                         str_contains($gizi, 'buruk') || str_contains($gizi, 'stunting') => 'bg-rose-50 text-rose-600 border-rose-200',
                                         default => 'bg-slate-50 text-slate-600 border-slate-200'
                                     };
-                                @endphp
-                                <span class="px-3 py-1.5 rounded-lg text-[10px] font-black border uppercase tracking-wider {{ $badge }} shadow-sm">
-                                    {{ $balita->pemeriksaan_terakhir->status_gizi }}
+                                ?>
+                                <span class="px-3 py-1.5 rounded-lg text-[10px] font-black border uppercase tracking-wider <?php echo e($badge); ?> shadow-sm">
+                                    <?php echo e($balita->pemeriksaan_terakhir->status_gizi); ?>
+
                                 </span>
-                            @else
+                            <?php else: ?>
                                 <span class="text-xs text-slate-400">-</span>
-                            @endif
+                            <?php endif; ?>
                         </td>
 
                         <td class="px-6 py-4 text-right">
-                            <a href="{{ route('bidan.rekam-medis.show', ['pasien_type' => 'balita', 'pasien_id' => $balita->id]) }}" class="smooth-route inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-[12px] font-bold rounded-xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm">
+                            <a href="<?php echo e(route('bidan.rekam-medis.show', ['pasien_type' => 'balita', 'pasien_id' => $balita->id])); ?>" class="smooth-route inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-[12px] font-bold rounded-xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm">
                                 <i class="fas fa-folder-open"></i> Buku Medis
                             </a>
                         </td>
 
                     </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="5" class="text-center py-20">
                             <div class="w-20 h-20 bg-slate-50 rounded-[24px] flex items-center justify-center text-slate-300 mx-auto mb-4 text-4xl shadow-inner border border-slate-100"><i class="fas fa-search"></i></div>
@@ -135,22 +136,23 @@
                             <p class="text-[13px] text-slate-500 mt-1 font-medium">Pastikan ejaan nama atau NIK yang Anda cari sudah benar.</p>
                         </td>
                     </tr>
-                    @endforelse
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
         
-        @if($balitas->hasPages())
+        <?php if($balitas->hasPages()): ?>
         <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 pagination-wrapper">
-            {{ $balitas->links() }}
+            <?php echo e($balitas->links()); ?>
+
         </div>
-        @endif
+        <?php endif; ?>
 
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
     const showLoader = () => {
         const loader = document.getElementById('smoothLoader');
@@ -176,4 +178,5 @@
         });
     });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('layouts.bidan', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\POSYANDU\posyandu-management-system\resources\views/bidan/pasien/balita.blade.php ENDPATH**/ ?>

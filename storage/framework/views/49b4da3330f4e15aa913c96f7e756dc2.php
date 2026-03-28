@@ -1,9 +1,9 @@
-@extends('layouts.bidan')
 
-@section('title', 'Validasi Pemeriksaan')
-@section('page-name', 'Detail & Validasi')
 
-@push('styles')
+<?php $__env->startSection('title', 'Validasi Pemeriksaan'); ?>
+<?php $__env->startSection('page-name', 'Detail & Validasi'); ?>
+
+<?php $__env->startPush('styles'); ?>
 <style>
     .animate-slide-up { opacity: 0; animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes slideUpFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -15,9 +15,9 @@
     .radio-card-reject input:checked + div { border-color: #f43f5e; background-color: #fff1f2; box-shadow: 0 4px 12px rgba(244,63,94,0.15); }
     .radio-card-reject input:checked + div .icon-times { color: #f43f5e; transform: scale(1.1); }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div id="smoothLoader" class="fixed inset-0 bg-slate-50/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center transition-all duration-300 opacity-100">
     <div class="relative w-20 h-20 flex items-center justify-center mb-4">
         <div class="absolute inset-0 border-4 border-cyan-100 rounded-full"></div>
@@ -30,12 +30,12 @@
 <div class="max-w-7xl mx-auto animate-slide-up">
 
     <div class="mb-6">
-        <a href="{{ route('bidan.pemeriksaan.index') }}" class="smooth-route inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 font-bold text-[13px] rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+        <a href="<?php echo e(route('bidan.pemeriksaan.index')); ?>" class="smooth-route inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 font-bold text-[13px] rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
             <i class="fas fa-arrow-left"></i> Kembali ke Antrian
         </a>
     </div>
 
-    @php
+    <?php
         $sv = $pemeriksaan->status_verifikasi ?? 'pending';
         $svConfig = [
             'verified' => ['emerald', 'check-circle',  'Pemeriksaan Selesai Diverifikasi'],
@@ -43,25 +43,25 @@
             'pending'  => ['amber', 'hourglass-half', 'Menunggu Diagnosa Bidan'],
         ];
         [$svColor, $svIcon, $svLabel] = $svConfig[$sv] ?? $svConfig['pending'];
-    @endphp
+    ?>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
         <div class="xl:col-span-2 space-y-6">
             
-            <div class="bg-{{ $svColor }}-50 border border-{{ $svColor }}-200 p-6 rounded-[24px] flex items-center justify-between shadow-sm relative overflow-hidden">
-                <div class="absolute right-0 top-0 w-32 h-32 bg-{{ $svColor }}-500/10 rounded-bl-[100px] pointer-events-none"></div>
+            <div class="bg-<?php echo e($svColor); ?>-50 border border-<?php echo e($svColor); ?>-200 p-6 rounded-[24px] flex items-center justify-between shadow-sm relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-32 h-32 bg-<?php echo e($svColor); ?>-500/10 rounded-bl-[100px] pointer-events-none"></div>
                 <div class="flex items-center gap-4 relative z-10">
-                    <div class="w-14 h-14 rounded-[18px] bg-white text-{{ $svColor }}-500 flex items-center justify-center text-3xl shrink-0 shadow-sm">
-                        <i class="fas fa-{{ $svIcon }}"></i>
+                    <div class="w-14 h-14 rounded-[18px] bg-white text-<?php echo e($svColor); ?>-500 flex items-center justify-center text-3xl shrink-0 shadow-sm">
+                        <i class="fas fa-<?php echo e($svIcon); ?>"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-black text-{{ $svColor }}-800 font-poppins tracking-tight">{{ $svLabel }}</h3>
-                        @if($pemeriksaan->verified_at)
-                            <p class="text-[13px] font-bold text-{{ $svColor }}-600 mt-1">Divalidasi oleh <span class="uppercase tracking-wider border-b border-{{ $svColor }}-300">{{ $pemeriksaan->verifikator?->name ?? 'Sistem' }}</span> pada {{ \Carbon\Carbon::parse($pemeriksaan->verified_at)->format('d M Y, H:i') }}</p>
-                        @else
-                            <p class="text-[13px] font-bold text-{{ $svColor }}-600 mt-1">Silakan analisis data ukur dari Kader di bawah dan berikan keputusan medis.</p>
-                        @endif
+                        <h3 class="text-xl font-black text-<?php echo e($svColor); ?>-800 font-poppins tracking-tight"><?php echo e($svLabel); ?></h3>
+                        <?php if($pemeriksaan->verified_at): ?>
+                            <p class="text-[13px] font-bold text-<?php echo e($svColor); ?>-600 mt-1">Divalidasi oleh <span class="uppercase tracking-wider border-b border-<?php echo e($svColor); ?>-300"><?php echo e($pemeriksaan->verifikator?->name ?? 'Sistem'); ?></span> pada <?php echo e(\Carbon\Carbon::parse($pemeriksaan->verified_at)->format('d M Y, H:i')); ?></p>
+                        <?php else: ?>
+                            <p class="text-[13px] font-bold text-<?php echo e($svColor); ?>-600 mt-1">Silakan analisis data ukur dari Kader di bawah dan berikan keputusan medis.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -72,10 +72,10 @@
                     <h3 class="font-black text-slate-800 text-[15px]">Informasi Pasien</h3>
                 </div>
                 <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nama Lengkap</p><p class="font-bold text-slate-800 text-sm">{{ $pemeriksaan->nama_pasien ?? ($pemeriksaan->balita->nama_lengkap ?? ($pemeriksaan->remaja->nama_lengkap ?? ($pemeriksaan->lansia->nama_lengkap ?? '-'))) }}</p></div>
-                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kategori</p><span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-md uppercase border border-slate-200 tracking-wider">{{ $pemeriksaan->kategori_pasien }}</span></div>
-                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tanggal Periksa</p><p class="font-bold text-slate-800 text-sm">{{ $pemeriksaan->tanggal_periksa?->format('d M Y') ?? '-' }}</p></div>
-                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Petugas (Kader)</p><p class="font-bold text-slate-800 text-sm">{{ $pemeriksaan->pemeriksa?->name ?? 'Sistem' }}</p></div>
+                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nama Lengkap</p><p class="font-bold text-slate-800 text-sm"><?php echo e($pemeriksaan->nama_pasien ?? ($pemeriksaan->balita->nama_lengkap ?? ($pemeriksaan->remaja->nama_lengkap ?? ($pemeriksaan->lansia->nama_lengkap ?? '-')))); ?></p></div>
+                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kategori</p><span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-md uppercase border border-slate-200 tracking-wider"><?php echo e($pemeriksaan->kategori_pasien); ?></span></div>
+                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tanggal Periksa</p><p class="font-bold text-slate-800 text-sm"><?php echo e($pemeriksaan->tanggal_periksa?->format('d M Y') ?? '-'); ?></p></div>
+                    <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Petugas (Kader)</p><p class="font-bold text-slate-800 text-sm"><?php echo e($pemeriksaan->pemeriksa?->name ?? 'Sistem'); ?></p></div>
                 </div>
             </div>
 
@@ -86,7 +86,7 @@
                 </div>
                 <div class="p-6 text-slate-800">
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        @php
+                        <?php
                             $fields = [
                                 'berat_badan'   => ['Berat Badan', 'kg', 'fa-weight'],
                                 'tinggi_badan'  => ['Tinggi Badan', 'cm', 'fa-ruler-vertical'],
@@ -99,24 +99,24 @@
                                 'lingkar_kepala'=> ['L. Kepala', 'cm', 'fa-child'],
                                 'lingkar_lengan'=> ['L. Lengan', 'cm', 'fa-child'],
                             ];
-                        @endphp
-                        @foreach($fields as $col => [$label, $satuan, $icon])
-                            @if(!empty($pemeriksaan->$col))
+                        ?>
+                        <?php $__currentLoopData = $fields; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $col => [$label, $satuan, $icon]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php if(!empty($pemeriksaan->$col)): ?>
                             <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center gap-4 shadow-sm hover:border-cyan-300 hover:shadow-md transition-all">
-                                <div class="w-11 h-11 rounded-full bg-slate-50 text-slate-400 border border-slate-100 flex items-center justify-center shrink-0 text-lg"><i class="fas {{ $icon }}"></i></div>
-                                <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{{ $label }}</p><p class="font-black text-slate-800 text-xl">{{ $pemeriksaan->$col }} <span class="text-xs font-bold text-slate-500">{{ $satuan }}</span></p></div>
+                                <div class="w-11 h-11 rounded-full bg-slate-50 text-slate-400 border border-slate-100 flex items-center justify-center shrink-0 text-lg"><i class="fas <?php echo e($icon); ?>"></i></div>
+                                <div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5"><?php echo e($label); ?></p><p class="font-black text-slate-800 text-xl"><?php echo e($pemeriksaan->$col); ?> <span class="text-xs font-bold text-slate-500"><?php echo e($satuan); ?></span></p></div>
                             </div>
-                            @endif
-                        @endforeach
+                            <?php endif; ?>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
 
-                    @if($pemeriksaan->keluhan)
+                    <?php if($pemeriksaan->keluhan): ?>
                     <div class="mt-6 p-5 bg-rose-50 border border-rose-100 rounded-2xl relative overflow-hidden">
                         <div class="absolute right-[-10px] top-[-10px] text-rose-500/10 text-6xl"><i class="fas fa-comment-medical"></i></div>
                         <p class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1 relative z-10"><i class="fas fa-exclamation-circle mr-1"></i> Keluhan Pasien (Catatan Kader)</p>
-                        <p class="font-bold text-rose-800 text-[14px] leading-relaxed relative z-10">"{{ $pemeriksaan->keluhan }}"</p>
+                        <p class="font-bold text-rose-800 text-[14px] leading-relaxed relative z-10">"<?php echo e($pemeriksaan->keluhan); ?>"</p>
                     </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -129,9 +129,9 @@
                 </div>
                 
                 <div class="p-6">
-                    @if($sv === 'pending')
-                        <form id="formValidasi" action="{{ route('bidan.pemeriksaan.verifikasi', $pemeriksaan->id) }}" method="POST" class="space-y-6">
-                            @csrf @method('PUT')
+                    <?php if($sv === 'pending'): ?>
+                        <form id="formValidasi" action="<?php echo e(route('bidan.pemeriksaan.verifikasi', $pemeriksaan->id)); ?>" method="POST" class="space-y-6">
+                            <?php echo csrf_field(); ?> <?php echo method_field('PUT'); ?>
                             
                             <div>
                                 <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Diagnosa Bidan <span class="text-rose-500">*</span></label>
@@ -172,29 +172,29 @@
                                 <i class="fas fa-stethoscope"></i> Simpan Diagnosa
                             </button>
                         </form>
-                    @else
+                    <?php else: ?>
                         <div class="space-y-6">
                             <div>
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5"><i class="fas fa-file-medical-alt mr-1"></i> Diagnosa Bidan</p>
-                                <div class="p-4 bg-cyan-50 border border-cyan-100 rounded-2xl text-cyan-900 font-bold text-[14px] leading-relaxed shadow-sm">{{ $pemeriksaan->diagnosa ?? '-' }}</div>
+                                <div class="p-4 bg-cyan-50 border border-cyan-100 rounded-2xl text-cyan-900 font-bold text-[14px] leading-relaxed shadow-sm"><?php echo e($pemeriksaan->diagnosa ?? '-'); ?></div>
                             </div>
                             
-                            @if($pemeriksaan->tindakan) 
+                            <?php if($pemeriksaan->tindakan): ?> 
                             <div>
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5"><i class="fas fa-pills mr-1"></i> Tindakan / Resep</p>
-                                <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 font-semibold text-[13px] shadow-sm">{{ $pemeriksaan->tindakan }}</div>
+                                <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 font-semibold text-[13px] shadow-sm"><?php echo e($pemeriksaan->tindakan); ?></div>
                             </div> 
-                            @endif
+                            <?php endif; ?>
                             
-                            @if($pemeriksaan->catatan_bidan) 
+                            <?php if($pemeriksaan->catatan_bidan): ?> 
                             <div>
                                 <p class="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1.5"><i class="fas fa-exclamation-triangle mr-1"></i> Catatan Penolakan</p>
-                                <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-800 font-bold text-[13px] shadow-sm">{{ $pemeriksaan->catatan_bidan }}</div>
+                                <div class="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-800 font-bold text-[13px] shadow-sm"><?php echo e($pemeriksaan->catatan_bidan); ?></div>
                             </div> 
-                            @endif
+                            <?php endif; ?>
                             
-                            <form id="formReset" action="{{ route('bidan.pemeriksaan.verifikasi', $pemeriksaan->id) }}" method="POST" class="mt-6 pt-6 border-t border-slate-200 border-dashed">
-                                @csrf @method('PUT')
+                            <form id="formReset" action="<?php echo e(route('bidan.pemeriksaan.verifikasi', $pemeriksaan->id)); ?>" method="POST" class="mt-6 pt-6 border-t border-slate-200 border-dashed">
+                                <?php echo csrf_field(); ?> <?php echo method_field('PUT'); ?>
                                 <input type="hidden" name="status_verifikasi" value="pending"><input type="hidden" name="diagnosa" value="">
                                 <button type="submit" id="btnReset" class="w-full py-3 bg-white border-2 border-slate-200 text-slate-500 font-bold text-[13px] rounded-xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all flex items-center justify-center gap-2">
                                     <i class="fas fa-undo"></i> Ralat & Batalkan Validasi
@@ -202,16 +202,16 @@
                                 <p class="text-[10px] font-medium text-slate-400 text-center mt-3 leading-tight">Tekan tombol ini jika Anda ingin mengubah diagnosa atau merasa salah memberikan keputusan ACC/Tolak.</p>
                             </form>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
     const showLoader = (text = 'MEMUAT SISTEM...') => {
         const loader = document.getElementById('smoothLoader');
@@ -265,4 +265,5 @@
         });
     }
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('layouts.bidan', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\POSYANDU\posyandu-management-system\resources\views/bidan/pemeriksaan/show.blade.php ENDPATH**/ ?>

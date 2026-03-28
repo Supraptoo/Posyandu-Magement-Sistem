@@ -200,4 +200,20 @@ class PemeriksaanController extends Controller
 
         return back()->with('success', 'Data berhasil diverifikasi.');
     }
+    /**
+     * Hapus data pemeriksaan secara permanen
+     */
+    public function destroy(int $id)
+    {
+        try {
+            $pemeriksaan = Pemeriksaan::findOrFail($id);
+            $pemeriksaan->delete();
+
+            return redirect()->route('bidan.pemeriksaan.index')
+                ->with('success', 'Data pemeriksaan berhasil dihapus secara permanen.');
+        } catch (\Throwable $e) {
+            return redirect()->route('bidan.pemeriksaan.index')
+                ->with('error', 'Gagal menghapus data. Pastikan data tidak terkunci oleh sistem.');
+        }
+    }
 }

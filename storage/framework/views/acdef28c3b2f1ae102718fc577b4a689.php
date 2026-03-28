@@ -1,15 +1,15 @@
-@extends('layouts.bidan')
-@section('title', 'Input Imunisasi Baru')
-@section('page-name', 'Tambah Imunisasi')
 
-@push('styles')
+<?php $__env->startSection('title', 'Input Imunisasi Baru'); ?>
+<?php $__env->startSection('page-name', 'Tambah Imunisasi'); ?>
+
+<?php $__env->startPush('styles'); ?>
 <style>
     .animate-slide-up { opacity: 0; animation: slideUpFade 0.4s ease-out forwards; }
     @keyframes slideUpFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div id="smoothLoader" class="fixed inset-0 bg-slate-50/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center transition-all duration-300 opacity-100">
     <div class="relative w-20 h-20 flex items-center justify-center mb-4">
         <div class="absolute inset-0 border-4 border-cyan-100 rounded-full"></div>
@@ -22,7 +22,7 @@
 <div class="max-w-4xl mx-auto animate-slide-up">
 
     <div class="mb-6">
-        <a href="{{ route('bidan.imunisasi.index') }}" class="smooth-route inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 font-bold text-[13px] rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+        <a href="<?php echo e(route('bidan.imunisasi.index')); ?>" class="smooth-route inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 font-bold text-[13px] rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
             <i class="fas fa-arrow-left"></i> Kembali ke Register
         </a>
     </div>
@@ -38,8 +38,8 @@
         </div>
     </div>
 
-    <form action="{{ route('bidan.imunisasi.store') }}" method="POST" id="imunisasiForm">
-        @csrf
+    <form action="<?php echo e(route('bidan.imunisasi.store')); ?>" method="POST" id="imunisasiForm">
+        <?php echo csrf_field(); ?>
         <div class="bg-white rounded-[32px] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.03)] overflow-hidden mb-8">
             
             <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
@@ -54,11 +54,11 @@
                         <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Pilih Pasien Kunjungan <span class="text-rose-500">*</span></label>
                         <select name="kunjungan_id" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-[13px] font-bold text-slate-700 focus:bg-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 outline-none transition-all cursor-pointer">
                             <option value="">-- Pilih Antrian Pasien --</option>
-                            @foreach($kunjungans as $k)
-                                <option value="{{ $k->id }}">
-                                    {{ \Carbon\Carbon::parse($k->tanggal_kunjungan)->format('d M') }} — {{ $k->pasien->nama_lengkap ?? 'Unknown' }} ({{ class_basename($k->pasien_type) }})
+                            <?php $__currentLoopData = $kunjungans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $k): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($k->id); ?>">
+                                    <?php echo e(\Carbon\Carbon::parse($k->tanggal_kunjungan)->format('d M')); ?> — <?php echo e($k->pasien->nama_lengkap ?? 'Unknown'); ?> (<?php echo e(class_basename($k->pasien_type)); ?>)
                                 </option>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
 
@@ -90,7 +90,7 @@
                     <div>
                         <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Tanggal Eksekusi <span class="text-rose-500">*</span></label>
                         <div class="relative">
-                            <input type="date" name="tanggal_imunisasi" value="{{ date('Y-m-d') }}" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-[13px] font-bold text-slate-800 focus:bg-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 outline-none transition-all cursor-pointer">
+                            <input type="date" name="tanggal_imunisasi" value="<?php echo e(date('Y-m-d')); ?>" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-[13px] font-bold text-slate-800 focus:bg-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 outline-none transition-all cursor-pointer">
                         </div>
                     </div>
 
@@ -106,7 +106,7 @@
     </form>
 </div>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
     const showLoader = (text = 'MEMUAT SISTEM...') => {
         const loader = document.getElementById('smoothLoader');
@@ -146,5 +146,6 @@
         showLoader('MENYIMPAN DATA KE SERVER...');
     });
 </script>
-@endpush
-@endsection
+<?php $__env->stopPush(); ?>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.bidan', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\POSYANDU\posyandu-management-system\resources\views/bidan/imunisasi/create.blade.php ENDPATH**/ ?>
