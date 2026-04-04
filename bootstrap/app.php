@@ -18,6 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
         \Illuminate\Http\Request::HEADER_X_FORWARDED_AWS_ELB
     );
 
+    // ← TAMBAH INI
+    $middleware->validateCsrfTokens(except: [
+        'login',
+        'login/*',
+    ]);
+
     $middleware->alias([
         'role'        => \App\Http\Middleware\RoleMiddleware::class,
         'checkstatus' => \App\Http\Middleware\CheckUserStatus::class,
