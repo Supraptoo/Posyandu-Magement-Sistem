@@ -11,39 +11,38 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-    $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
-        \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
-        \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
-        \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO |
-        \Illuminate\Http\Request::HEADER_X_FORWARDED_AWS_ELB
-    );
 
-    // ← TAMBAH INI
-    $middleware->validateCsrfTokens(except: [
-        'login',
-        'login/*',
-    ]);
+        // 1. Trust semua proxy (wajib untuk Vercel agar CSRF/session bisa dibaca)
+        $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_AWS_ELB
+        );
 
-    $middleware->alias([
-        'role'        => \App\Http\Middleware\RoleMiddleware::class,
-        'checkstatus' => \App\Http\Middleware\CheckUserStatus::class,
-        'logactivity' => \App\Http\Middleware\LogUserActivity::class,
-    ]);
+        // 2. Alias middleware
+        $middleware->alias([
+            'role'        => \App\Http\Middleware\RoleMiddleware::class,
+            'checkstatus' => \App\Http\Middleware\CheckUserStatus::class,
+            'logactivity' => \App\Http\Middleware\LogUserActivity::class,
+        ]);
 
-    $middleware->redirectGuestsTo('/login');
+        // 3. Redirect guest ke login
+        $middleware->redirectGuestsTo('/login');
 
-    $middleware->redirectUsersTo(function () {
-        $user = auth()->user();
-        if (!$user) return '/login';
-        return match(strtolower($user->role)) {
-            'admin'  => '/admin/dashboard',
-            'bidan'  => '/bidan/dashboard',
-            'kader'  => '/kader/dashboard',
-            'user'   => '/user/dashboard',
-            default  => '/home',
-        };
-    });
-})
+        // 4. Redirect user yang sudah login ke dashboard sesuai role
+        $middleware->redirectUsersTo(function () {
+            $user = auth()->user();
+            if (!$user) return '/login';
+            return match(strtolower($user->role)) {
+                'admin'  => '/admin/dashboard',
+                'bidan'  => '/bidan/dashboard',
+                'kader'  => '/kader/dashboard',
+                'user'   => '/user/dashboard',
+                default  => '/home',
+            };
+        });
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
