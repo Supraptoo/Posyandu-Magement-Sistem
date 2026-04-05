@@ -1,17 +1,20 @@
 @php
     $pendingCount = \App\Models\Pemeriksaan::where('status_verifikasi', 'pending')->count();
         
-    $activeClass = 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_8px_16px_rgba(14,165,233,0.25)] transform scale-[1.02] transition-all';
-    $inactiveClass = 'text-slate-500 hover:bg-slate-50 hover:text-sky-700 transition-all border border-transparent hover:border-slate-100';
+    $activeClass = 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_8px_16px_rgba(6,182,212,0.25)] transform scale-[1.02] transition-all';
+    $inactiveClass = 'text-slate-500 hover:bg-slate-50 hover:text-cyan-700 transition-all border border-transparent hover:border-slate-100';
     
     $activeIconClass = 'text-white';
-    $inactiveIconClass = 'text-slate-400 group-hover:text-sky-500';
+    $inactiveIconClass = 'text-slate-400 group-hover:text-cyan-500';
     
-    $isDataWargaActive = request()->routeIs('bidan.pasien.*');
+    // Ganti deteksi route ke Rekam Medis
+    $isRekamMedisActive = request()->routeIs('bidan.rekam-medis.*');
+    $typeParam = request()->get('type', 'balita');
 @endphp
 
 <div class="space-y-7">
     
+    {{-- OVERVIEW --}}
     <div>
         <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Overview</p>
         <a href="{{ route('bidan.dashboard') }}" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] {{ request()->routeIs('bidan.dashboard') ? $activeClass : $inactiveClass }}">
@@ -20,6 +23,7 @@
         </a>
     </div>
 
+    {{-- LAYANAN KLINIS --}}
     <div>
         <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Layanan Klinis</p>
         <div class="space-y-2">
@@ -46,37 +50,43 @@
             <a href="{{ route('bidan.konseling.index') }}" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] {{ request()->routeIs('bidan.konseling*') ? $activeClass : $inactiveClass }}">
                 <i class="fas fa-comments w-6 text-center text-[16px] transition-colors {{ request()->routeIs('bidan.konseling*') ? $activeIconClass : $inactiveIconClass }}"></i>
                 <span class="font-poppins tracking-wide">Konseling Kesehatan</span>
-
-            <a href="{{ route('bidan.rekam-medis.index') }}" class="smooth-route group flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-[13px] {{ request()->routeIs('bidan.rekam-medis*') ? $activeClass : $inactiveClass }}">
-                <i class="fas fa-notes-medical w-6 text-center text-[16px] transition-colors {{ request()->routeIs('bidan.rekam-medis*') ? $activeIconClass : $inactiveIconClass }}"></i>
-                <span class="font-poppins tracking-wide">Buku Rekam Medis</span>
             </a>
         </div>
     </div>
 
+    {{-- PEMANTAUAN PASIEN (Database Terpusat) --}}
     <div>
         <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Pemantauan Pasien</p>
         <div class="space-y-2">
-            <button onclick="toggleSubmenu('menuPasien', 'iconPasien')" class="w-full group flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-[13px] border border-transparent {{ $isDataWargaActive ? 'bg-sky-50 text-sky-700 border-sky-100' : 'text-slate-500 hover:bg-slate-50 hover:text-sky-700 hover:border-slate-100' }}">
+            <button onclick="toggleSubmenu('menuPasien', 'iconPasien')" class="w-full group flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-[13px] border border-transparent {{ $isRekamMedisActive ? 'bg-cyan-50 text-cyan-700 border-cyan-100' : 'text-slate-500 hover:bg-slate-50 hover:text-cyan-700 hover:border-slate-100' }}">
                 <div class="flex items-center gap-3">
-                    <i class="fas fa-users-viewfinder w-6 text-center text-[16px] transition-colors {{ $isDataWargaActive ? 'text-sky-600' : 'text-slate-400 group-hover:text-sky-500' }}"></i>
-                    <span class="font-poppins tracking-wide">Database Warga</span>
+                    <i class="fas fa-folder-open w-6 text-center text-[16px] transition-colors {{ $isRekamMedisActive ? 'text-cyan-600' : 'text-slate-400 group-hover:text-cyan-500' }}"></i>
+                    <span class="font-poppins tracking-wide">Buku Rekam Medis</span>
                 </div>
-                <i id="iconPasien" class="fas fa-chevron-down text-[10px] transition-transform duration-300 {{ $isDataWargaActive ? 'rotate-180 text-sky-600' : 'text-slate-400' }}"></i>
+                <i id="iconPasien" class="fas fa-chevron-down text-[10px] transition-transform duration-300 {{ $isRekamMedisActive ? 'rotate-180 text-cyan-600' : 'text-slate-400' }}"></i>
             </button>
             
-            <div id="menuPasien" class="grid transition-all duration-300 ease-in-out {{ $isDataWargaActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0' }}">
+            <div id="menuPasien" class="grid transition-all duration-300 ease-in-out {{ $isRekamMedisActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0' }}">
                 <div class="overflow-hidden">
                     <div class="pl-12 pr-2 py-2 space-y-1.5 relative before:absolute before:left-7 before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
-                        <a href="{{ route('bidan.pasien.balita') }}" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full {{ request()->routeIs('bidan.pasien.balita') ? 'text-sky-700 bg-white shadow-sm border border-sky-100 before:bg-sky-500 before:ring-4 before:ring-sky-50' : 'text-slate-500 hover:text-sky-700 hover:bg-slate-50 before:bg-slate-300' }}">Anak & Balita</a>
-                        <a href="{{ route('bidan.pasien.remaja') }}" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full {{ request()->routeIs('bidan.pasien.remaja') ? 'text-sky-700 bg-white shadow-sm border border-sky-100 before:bg-sky-500 before:ring-4 before:ring-sky-50' : 'text-slate-500 hover:text-sky-700 hover:bg-slate-50 before:bg-slate-300' }}">Usia Remaja</a>
-                        <a href="{{ route('bidan.pasien.lansia') }}" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full {{ request()->routeIs('bidan.pasien.lansia') ? 'text-sky-700 bg-white shadow-sm border border-sky-100 before:bg-sky-500 before:ring-4 before:ring-sky-50' : 'text-slate-500 hover:text-sky-700 hover:bg-slate-50 before:bg-slate-300' }}">Lansia (Manula)</a>
+                        @foreach([
+                            ['type' => 'balita', 'label' => 'Anak & Balita'],
+                            ['type' => 'ibu_hamil', 'label' => 'Ibu Hamil'],
+                            ['type' => 'remaja', 'label' => 'Usia Remaja'],
+                            ['type' => 'lansia', 'label' => 'Lansia (Manula)'],
+                        ] as $item)
+                            @php $isActive = $isRekamMedisActive && $typeParam == $item['type']; @endphp
+                            <a href="{{ route('bidan.rekam-medis.index', ['type' => $item['type']]) }}" class="smooth-route block px-4 py-2.5 text-[12px] font-bold rounded-xl transition-all relative before:absolute before:left-[-22px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:rounded-full {{ $isActive ? 'text-cyan-700 bg-white shadow-sm border border-cyan-100 before:bg-cyan-500 before:ring-4 before:ring-cyan-50' : 'text-slate-500 hover:text-cyan-700 hover:bg-slate-50 before:bg-slate-300' }}">
+                                {{ $item['label'] }}
+                            </a>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- MANAJEMEN DATA --}}
     <div>
         <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 opacity-80 font-poppins">Manajemen Data</p>
         <div class="space-y-2">
